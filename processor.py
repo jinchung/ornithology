@@ -29,7 +29,7 @@ class Processor(threading.Thread):
             tweets = pickle.load(open("tweets.p","rb"))
             for tweet in tweets:
                 self.tweets_queue.put(tweet)
-                print(json.dumps(tweet, indent=4, separators=(',', ': ')))
+#                print(json.dumps(tweet, indent=4, separators=(',', ': ')))
 
     def on_receive(self, data):
         self.buffer += data
@@ -40,5 +40,5 @@ class Processor(threading.Thread):
         if 'text' in content.keys():
             res = {key:value for (key,value) in content.items() if key in self.attributes}
             self.tweets_queue.put(res)
-            print(json.dumps(res, indent=4, separators=(',', ': ')))
+#            print(json.dumps(res, indent=4, separators=(',', ': ')))
 

@@ -1,6 +1,8 @@
 import sys
-import processor
 import Queue
+
+import processor
+import consumer
 
 """
 Spawn the twitter stream producer thread
@@ -21,15 +23,18 @@ Password: ornithology
 """
 
 class Supervisor(object):
-    def __init__(self, username, password, dev_mode):
+    def __init__(self, username, password, keywords, dev_mode):
         self.username = username
         self.password = password
         self.tweets_queue = Queue.Queue()
+        self.keywords = keywords
         self.dev_mode = dev_mode
 
     def launch(self):  
         p = processor.Processor(self.username, self.password, self.tweets_queue, self.dev_mode)
+        c = consumer.Consumer(self.tweets_queue, self.keywords)
         p.start()
+        c.start()
 
 if __name__=="__main__":
     if len(sys.argv) == 3:
@@ -41,5 +46,9 @@ if __name__=="__main__":
     else:
         print(supervisor.__doc__)
 
-    Supervisor(username, password, dev_mode).launch()
+    print("\nPlease enter the keywords you want to monitor, separated by commas, and press enter: ")
+    keywords = sys.stdin.readline()
+    keywords = {word.strip() for word in keywords.split(',')}
+
+    Supervisor(username, password, keywords, dev_mode).launch()
 
