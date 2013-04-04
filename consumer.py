@@ -9,26 +9,25 @@ COL3 = 20;
 
 class Consumer(threading.Thread):
 
-    def __init__(self, tweets_queue, keywords, update_metrics):
+    def __init__(self, msg_queue, keywords, update_metrics):
         threading.Thread.__init__(self)
-        self.tweets_queue = tweets_queue
+        self.msg_queue = msg_queue
         self.keywords = keywords
         self.update_metrics_callback = update_metrics
-        self.logfile = open('matched_tweets.log', 'w')
-        self.date_format = '%a %b %d %H:%M:%S +0000 %Y'
+        self.logfile = open('matched_msgs.log', 'w')
 
     def run(self):
         while True:
-            tweet = self.tweets_queue.get(True)
-            text = set(tweet['text'].lower().split())
+            msg = self.msg_queue.get(True)
+            text = set(msg['content'].lower().split())
             matches = self.keywords.intersection(text)
             for match in matches:
-                self.logfile.write(match.rjust(COL1) + tweet['created_at'].rjust(COL2) + str(tweet["coordinates"]).rjust(COL3) + '\n')
+                self.logfile.write(match.rjust(COL1) + str(msg['timestamp']).rjust(COL2) + str(msg["location"]).rjust(COL3) + '\n')
                 self.logfile.flush()
-            self.update_metrics_callback(self.calculate_latency(tweet['created_at']))
+            self.update_metrics_callback(self.calculate_latency(msg['timestamp']))
 
-    def calculate_latency(self, tweet_timestamp):
+    def calculate_latency(self, msg_timestamp):
         now = datetime.datetime.utcnow()
-        delta = now - datetime.datetime.strptime(tweet_timestamp, self.date_format)
+        delta = now - msg_timestamp
         return delta.total_seconds()
         
