@@ -33,7 +33,7 @@ class Supervisor(object):
         self.msg_queue = Queue.Queue()
         self.keywords = keywords
         self.dev_mode = dev_mode
-        self.metrics = {'qlength':0, 'num_msg':0, 'throughput':None, 'latency':None } 
+        self.metrics = {'qlength':0, 'num_msg':0, 'throughput':0.0, 'latency':0.0 } 
 
     def launch(self):  
         t = twitterprocessor.TwitterProcessor(self.username, self.password, self.msg_queue, self.dev_mode)
@@ -54,7 +54,12 @@ class Supervisor(object):
             old_timestamp = now
             old_num_msg = self.metrics['num_msg']
 
-            print self.metrics
+            row = str(self.metrics['num_msg']).rjust(15)
+            row += "{0:.2f}".format(self.metrics['throughput']).rjust(15)
+            row += str(self.metrics['qlength']).rjust(15)
+            row += str(self.metrics['latency']).rjust(15)
+            print row
+
             time.sleep(0.5)
 
     def update_metrics(self, latency):

@@ -3,9 +3,13 @@ import Queue
 import json
 import datetime
 
+BLUE = '\033[34m'
+GREEN = '\033[32m'
+END = '\033[0m'
+
 COL1 = 10;
 COL2 = 10;
-COL3 = 40;
+COL3 = 20;
 COL4 = 20;
 
 class Consumer(threading.Thread):
@@ -24,7 +28,8 @@ class Consumer(threading.Thread):
             matches = self.keywords.intersection(text)
             for match in matches:
                 row = match.rjust(COL1)
-                row += msg['source'].rjust(COL2)
+                prefix = BLUE if msg['source'] == 'facebook' else GREEN
+                row += prefix + msg['source'].rjust(COL2) + END
                 row += str(msg['timestamp']).rjust(COL3)
                 row += str(msg['location']).rjust(COL4)
                 row += '\n'
