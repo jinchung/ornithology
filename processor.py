@@ -14,7 +14,7 @@ class Processor(threading.Thread):
             self.stream_url = 'https://stream.twitter.com/1.1/statuses/sample.json'
             self.username = username
             self.password = password
-            self.attributes = ['text', 'id', 'coordinates', 'created_at']
+            self.attributes = ['user', 'text', 'id', 'coordinates', 'created_at']
             self.buffer = ""
             self.conn = pycurl.Curl()
             self.conn.setopt(pycurl.USERPWD, "%s:%s" % (self.username, self.password))

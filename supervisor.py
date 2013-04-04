@@ -1,5 +1,7 @@
 import sys
 import Queue
+import datetime
+import time
 
 import processor
 import consumer
@@ -29,12 +31,32 @@ class Supervisor(object):
         self.tweets_queue = Queue.Queue()
         self.keywords = keywords
         self.dev_mode = dev_mode
+        self.metrics = {'qlength':0, 'num_tweets':0, 'throughput':None, 'latency':None } 
 
     def launch(self):  
         p = processor.Processor(self.username, self.password, self.tweets_queue, self.dev_mode)
-        c = consumer.Consumer(self.tweets_queue, self.keywords)
+        c = consumer.Consumer(self.tweets_queue, self.keywords, self.update_metrics)
         p.start()
         c.start()
+        old_timestamp = datetime.datetime.utcnow()
+        old_num_tweets = 0
+        while True:
+            self.metrics['qlength'] = self.tweets_queue.qsize()
+            
+            now = datetime.datetime.utcnow()
+            time_delta = now - old_timestamp
+            num_tweets_delta = self.metrics['num_tweets'] - old_num_tweets
+            self.metrics['throughput'] = num_tweets_delta / time_delta.total_seconds()
+            old_timestamp = now
+            old_num_tweets = self.metrics['num_tweets']
+
+            print self.metrics
+            time.sleep(0.5)
+
+    def update_metrics(self, latency):
+        self.metrics['num_tweets'] += 1
+        self.metrics['latency'] = latency
+
 
 if __name__=="__main__":
     if len(sys.argv) == 3:
