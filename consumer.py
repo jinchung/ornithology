@@ -4,8 +4,9 @@ import json
 import datetime
 
 COL1 = 10;
-COL2 = 40;
-COL3 = 20;
+COL2 = 10;
+COL3 = 40;
+COL4 = 20;
 
 class Consumer(threading.Thread):
 
@@ -22,8 +23,14 @@ class Consumer(threading.Thread):
             text = set(msg['content'].lower().split())
             matches = self.keywords.intersection(text)
             for match in matches:
-                self.logfile.write(match.rjust(COL1) + str(msg['timestamp']).rjust(COL2) + str(msg["location"]).rjust(COL3) + '\n')
+                row = match.rjust(COL1)
+                row += msg['source'].rjust(COL2)
+                row += str(msg['timestamp']).rjust(COL3)
+                row += str(msg['location']).rjust(COL4)
+                row += '\n'
+                self.logfile.write(row)
                 self.logfile.flush()
+
             self.update_metrics_callback(self.calculate_latency(msg['timestamp']))
 
     def calculate_latency(self, msg_timestamp):

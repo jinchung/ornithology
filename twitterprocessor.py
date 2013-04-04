@@ -47,4 +47,3 @@ class TwitterProcessor(processor.Processor):
         result['timestamp'] = datetime.datetime.strptime(tweet['created_at'], self.date_format)
         return result
 
-

@@ -5,6 +5,7 @@ import datetime
 import time
 
 import twitterprocessor
+import facebookprocessor
 import consumer
 
 """
@@ -35,9 +36,11 @@ class Supervisor(object):
         self.metrics = {'qlength':0, 'num_msg':0, 'throughput':None, 'latency':None } 
 
     def launch(self):  
-        p = twitterprocessor.TwitterProcessor(self.username, self.password, self.msg_queue, self.dev_mode)
+        t = twitterprocessor.TwitterProcessor(self.username, self.password, self.msg_queue, self.dev_mode)
+        f = facebookprocessor.FacebookProcessor(self.msg_queue, self.dev_mode)
         c = consumer.Consumer(self.msg_queue, self.keywords, self.update_metrics)
-        p.start()
+        t.start()
+        f.start()
         c.start()
         old_timestamp = datetime.datetime.utcnow()
         old_num_msg = 0
@@ -69,7 +72,7 @@ if __name__=="__main__":
     else:
         print(supervisor.__doc__)
 
-    print("\nPlease enter the keywords you want to monitor, separated by commas, and press enter: ")
+    print("Please enter the keywords you want to monitor, separated by commas, and press enter: ")
     keywords = sys.stdin.readline()
     keywords = {word.strip() for word in keywords.split(',')}
 
