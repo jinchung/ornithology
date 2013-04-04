@@ -28,12 +28,21 @@ Password: ornithology
 
 class Supervisor(object):
     def __init__(self, username, password, keywords, dev_mode):
+
         self.username = username
         self.password = password
         self.msg_queue = Queue.Queue()
         self.keywords = keywords
         self.dev_mode = dev_mode
         self.metrics = {'qlength':0, 'num_msg':0, 'throughput':0.0, 'latency':0.0 } 
+
+        row = '\n'
+        row += "Total # of msgs".rjust(20)
+        row += "Throughput (msg/s)".rjust(20)
+        row += "Queue Length (Msgs)".rjust(20)
+        row += "Latency (s)".rjust(20)
+        row += '\n'
+        print row
 
     def launch(self):  
         t = twitterprocessor.TwitterProcessor(self.username, self.password, self.msg_queue, self.dev_mode)
@@ -54,10 +63,10 @@ class Supervisor(object):
             old_timestamp = now
             old_num_msg = self.metrics['num_msg']
 
-            row = str(self.metrics['num_msg']).rjust(15)
-            row += "{0:.2f}".format(self.metrics['throughput']).rjust(15)
-            row += str(self.metrics['qlength']).rjust(15)
-            row += str(self.metrics['latency']).rjust(15)
+            row = str(self.metrics['num_msg']).rjust(20)
+            row += "{0:.2f}".format(self.metrics['throughput']).rjust(20)
+            row += str(self.metrics['qlength']).rjust(20)
+            row += "{0:.2f}".format(self.metrics['latency']).rjust(20)
             print row
 
             time.sleep(0.5)

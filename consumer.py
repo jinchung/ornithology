@@ -8,9 +8,9 @@ GREEN = '\033[32m'
 END = '\033[0m'
 
 COL1 = 10;
-COL2 = 10;
-COL3 = 20;
-COL4 = 20;
+COL2 = 15;
+COL3 = 30;
+COL4 = 15;
 
 class Consumer(threading.Thread):
 
