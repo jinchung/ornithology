@@ -1,16 +1,20 @@
+"""
+Consumer processes all incoming messages
+and searches for keywords
+"""
 import threading
-import Queue
-import json
 import datetime
 import time
 
-COL1 = 10;
-COL2 = 15;
-COL3 = 30;
-COL4 = 15;
+COL1 = 10
+COL2 = 15
+COL3 = 30
+COL4 = 15
 
 class Consumer(threading.Thread):
-
+    """
+    Consumer thread that searches keywords for all messages
+    """
     def __init__(self, msg_queue, keywords, update_metrics):
         threading.Thread.__init__(self)
         self.msg_queue = msg_queue
@@ -33,10 +37,15 @@ class Consumer(threading.Thread):
                 row += '\n'
                 self.logfile.write(row)
                 self.logfile.flush()
+            latency = self.calculate_latency(msg['timestamp'])
+            self.update_metrics_callback(latency)
 
-            self.update_metrics_callback(self.calculate_latency(msg['timestamp']))
-
-    def calculate_latency(self, msg_timestamp):
+    @staticmethod
+    def calculate_latency(msg_timestamp):
+        """
+        Calculates latency between current time and
+        timestamp of the message
+        """
         now = datetime.datetime.utcnow()
         delta = now - msg_timestamp
         return delta.total_seconds()
