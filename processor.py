@@ -1,6 +1,8 @@
 import threading
 import Queue
 import abc
+import re
+import datetime
 
 class Processor(threading.Thread):
     __metaclass__ = abc.ABCMeta
@@ -22,6 +24,21 @@ class Processor(threading.Thread):
     @abc.abstractmethod
     def run(self):
         return
+
+    @staticmethod
+    def parseTimezone(timestr, format):
+        regex = r'[+-][01]\d:?\d\d'
+        offset = re.findall(regex, timestr)
+        if offset:
+            hours = int(offset[0][:3])
+            mins = int(offset[0][-2:])
+            delta = datetime.timedelta(hours=hours, minutes=mins) 
+            timestr = timestr.replace(offset[0], '')
+        else:
+            delta = datetime.timedelta()
+        date = datetime.datetime.strptime(timestr, format)
+        return date + delta
+        
 
     @abc.abstractmethod
     def map(self, raw_msg):

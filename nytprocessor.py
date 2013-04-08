@@ -47,6 +47,7 @@ class NYTProcessor(processor.Processor):
         geo_facet = msg['geo_facet'][0] if msg['geo_facet'] else None
         
         result = {'source': 'NYT', 'color':self.colors['white'], 'content':msg['title'] + ' - ' + msg['abstract'], 'location':geo_facet}
+        
         timestring = msg['updated_date'][:-3] + msg['updated_date'][-2:]
         result['timestamp'] = datetime.datetime.strptime(timestring, self.date_format)
         return result
