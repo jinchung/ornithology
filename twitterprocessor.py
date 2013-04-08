@@ -43,7 +43,7 @@ class TwitterProcessor(processor.Processor):
 
     def map(self, tweet):
         tweet = {key:value for (key,value) in tweet.items() if key in self.attributes}
-        result = {'source': 'twitter', 'content':tweet['text'], 'location':tweet['coordinates']}
+        result = {'source': 'twitter', 'color':self.colors['green'], 'content':tweet['text'], 'location':tweet['coordinates']}
         result['timestamp'] = datetime.datetime.strptime(tweet['created_at'], self.date_format)
         return result
 

@@ -2,10 +2,7 @@ import threading
 import Queue
 import json
 import datetime
-
-BLUE = '\033[34m'
-GREEN = '\033[32m'
-END = '\033[0m'
+import time
 
 COL1 = 10;
 COL2 = 15;
@@ -20,16 +17,17 @@ class Consumer(threading.Thread):
         self.keywords = keywords
         self.update_metrics_callback = update_metrics
         self.logfile = open('matched_msgs.log', 'w')
+        self.end = '\033[0m'
 
     def run(self):
         while True:
             msg = self.msg_queue.get(True)
+            time.sleep(0.01)
             text = set(msg['content'].lower().split())
             matches = self.keywords.intersection(text)
             for match in matches:
                 row = match.rjust(COL1)
-                prefix = BLUE if msg['source'] == 'facebook' else GREEN
-                row += prefix + msg['source'].rjust(COL2) + END
+                row += msg['color'] + msg['source'].rjust(COL2) + self.end
                 row += str(msg['timestamp']).rjust(COL3)
                 row += str(msg['location']).rjust(COL4)
                 row += '\n'

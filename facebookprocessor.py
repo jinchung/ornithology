@@ -35,7 +35,7 @@ class FacebookProcessor(processor.Processor):
 
     def map(self, msg):
         msg = {key:value for (key,value) in msg.items() if key in self.attributes}
-        result = {'source': 'facebook', 'content':msg['message'], 'location':None}
+        result = {'source': 'facebook', 'color':self.colors['blue'], 'content':msg['message'], 'location':None}
         result['timestamp'] = datetime.datetime.strptime(msg['updated_time'], self.date_format)
         return result
 

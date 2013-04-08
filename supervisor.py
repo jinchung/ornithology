@@ -6,6 +6,7 @@ import time
 
 import twitterprocessor
 import facebookprocessor
+import nytprocessor
 import consumer
 
 """
@@ -46,11 +47,17 @@ class Supervisor(object):
 
     def launch(self):  
         t = twitterprocessor.TwitterProcessor(self.username, self.password, self.msg_queue, self.dev_mode)
-        f = facebookprocessor.FacebookProcessor(self.msg_queue, self.dev_mode)
-        c = consumer.Consumer(self.msg_queue, self.keywords, self.update_metrics)
         t.start()
+        
+        f = facebookprocessor.FacebookProcessor(self.msg_queue, self.dev_mode)
         f.start()
+        
+        nyt = nytprocessor.NYTProcessor(self.msg_queue, self.dev_mode)
+        nyt.start()
+        
+        c = consumer.Consumer(self.msg_queue, self.keywords, self.update_metrics)
         c.start()
+        
         old_timestamp = datetime.datetime.utcnow()
         old_num_msg = 0
         while True:
