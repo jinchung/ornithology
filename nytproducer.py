@@ -5,7 +5,6 @@ Application Registration Name: Ornithology
 Times Newswire API Key: 7831b763eca627bc9b2967a43cb8a5e6:3:67531365
 """
 
-import datetime
 import json
 import pycurl
 import time
@@ -13,6 +12,9 @@ import time
 import producer
 
 class NYTProducer(producer.Producer):
+    """
+    Base producer class for NYT API
+    """
 
     def __init__(self, msg_queue):
         super(NYTProducer, self).__init__(msg_queue)
@@ -41,6 +43,9 @@ class NYTProducer(producer.Producer):
                            # is 5000 requests per day
 
     def write_function(self, data):
+        """
+        Callback for pycurl to write to buffer
+        """
         self.buffer += data
 
     def map(self, msg):
