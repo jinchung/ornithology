@@ -14,10 +14,9 @@ class Producer(threading.Thread):
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, msg_queue, dev_mode):
+    def __init__(self, msg_queue):
         threading.Thread.__init__(self)
         self.msg_queue = msg_queue
-        self.dev_mode = dev_mode
         self.colors = {
             'red': '\033[31m',
             'green': '\033[32m',

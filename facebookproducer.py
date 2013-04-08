@@ -5,9 +5,9 @@ import json
 import pycurl
 import time
 
-import ornithology.producer
+import producer
 
-class FacebookProducer(ornithology.producer.Producer):
+class FacebookProducer(producer.Producer):
     """
     Facebook Producer thread for gathering status updates
     """
@@ -17,12 +17,11 @@ class FacebookProducer(ornithology.producer.Producer):
         self.attributes = ['message', 'updated_time']
         self.date_format = '%Y-%m-%dT%H:%M:%S'
 
-        if not self.dev_mode:
-            self.buffer = ""
-            self.stream_url = 'https://graph.facebook.com/search?q=*&type=post'
-            self.conn = pycurl.Curl()
-            self.conn.setopt(pycurl.URL, self.stream_url)
-            self.conn.setopt(pycurl.WRITEFUNCTION, self.write_function)
+        self.buffer = ""
+        self.stream_url = 'https://graph.facebook.com/search?q=*&type=post'
+        self.conn = pycurl.Curl()
+        self.conn.setopt(pycurl.URL, self.stream_url)
+        self.conn.setopt(pycurl.WRITEFUNCTION, self.write_function)
 
     def run(self):
         while True:

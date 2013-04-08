@@ -13,9 +13,9 @@ import datetime
 import time
 import argparse
 
-import twitterprocessor
-import facebookprocessor
-import nytprocessor
+import twitterproducer
+import facebookproducer
+import nytproducer
 import consumer
 
 class Supervisor(object):
@@ -47,15 +47,15 @@ class Supervisor(object):
         """
         Launch whole application, producers and consumer
         """
-        twitter = twitterprocessor.TwitterProcessor(self.username,
+        twitter = twitterproducer.TwitterProducer(self.username,
                                                     self.password,
                                                     self.msg_queue)
         twitter.start()
         
-        facebook = facebookprocessor.FacebookProcessor(self.msg_queue)
+        facebook = facebookproducer.FacebookProducer(self.msg_queue)
         facebook.start()
         
-        nyt = nytprocessor.NYTProcessor(self.msg_queue)
+        nyt = nytproducer.NYTProducer(self.msg_queue)
         nyt.start()
         
         con = consumer.Consumer(self.msg_queue, self.keywords,
