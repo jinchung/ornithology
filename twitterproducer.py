@@ -1,17 +1,23 @@
+"""
+Twitter subclass for pulling content from Twitter API
+"""
 
 import pycurl
 import pickle
 import datetime
 import json
 
-import processor
+import producer
 
-class TwitterProcessor(processor.Processor):
+class TwitterProducer(producer.Producer):
+    """
+    Twitter subclass for pulling content from Twitter API
+    """
 
     def __init__(self, username, password, msg_queue, dev_mode):
-        super(TwitterProcessor, self).__init__(msg_queue, dev_mode)
+        super(TwitterProducer, self).__init__(msg_queue, dev_mode)
 
-        self.date_format = '%a %b %d %H:%M:%S +0000 %Y'
+        self.date_format = '%a %b %d %H:%M:%S %Y'
         self.attributes = ['text', 'coordinates', 'created_at']
 
         if not self.dev_mode:
@@ -44,6 +50,6 @@ class TwitterProcessor(processor.Processor):
     def map(self, tweet):
         tweet = {key:value for (key,value) in tweet.items() if key in self.attributes}
         result = {'source': 'twitter', 'color':self.colors['green'], 'content':tweet['text'], 'location':tweet['coordinates']}
-        result['timestamp'] = datetime.datetime.strptime(tweet['created_at'], self.date_format)
+        result['timestamp'] = self.parseTime(tweet['created_at'], self.date_format)
         return result
 

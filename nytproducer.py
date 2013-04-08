@@ -18,7 +18,7 @@ class NYTProcessor(processor.Processor):
         super(NYTProcessor, self).__init__(msg_queue, dev_mode)
 
         self.attributes = ['title', 'abstract', 'updated_date', 'geo_facet']
-        self.date_format = '%Y-%m-%dT%H:%M:%S-0400'
+        self.date_format = '%Y-%m-%dT%H:%M:%S'
 
         self.apikey = '7831b763eca627bc9b2967a43cb8a5e6:3:67531365'
 
@@ -48,8 +48,9 @@ class NYTProcessor(processor.Processor):
         
         result = {'source': 'NYT', 'color':self.colors['white'], 'content':msg['title'] + ' - ' + msg['abstract'], 'location':geo_facet}
         
-        timestring = msg['updated_date'][:-3] + msg['updated_date'][-2:]
-        result['timestamp'] = datetime.datetime.strptime(timestring, self.date_format)
+#        timestring = msg['updated_date'][:-3] + msg['updated_date'][-2:]
+#        result['timestamp'] = datetime.datetime.strptime(timestring, self.date_format)
+        result['timestamp'] = self.parseTime(msg['updated_date'], self.date_format)
         return result
 
 

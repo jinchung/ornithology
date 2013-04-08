@@ -12,7 +12,7 @@ class FacebookProcessor(processor.Processor):
         super(FacebookProcessor, self).__init__(msg_queue, dev_mode)
 
         self.attributes = ['message', 'updated_time']
-        self.date_format = '%Y-%m-%dT%H:%M:%S+0000'
+        self.date_format = '%Y-%m-%dT%H:%M:%S'
 
         if not self.dev_mode:
             self.buffer = ""
@@ -36,7 +36,7 @@ class FacebookProcessor(processor.Processor):
     def map(self, msg):
         msg = {key:value for (key,value) in msg.items() if key in self.attributes}
         result = {'source': 'facebook', 'color':self.colors['blue'], 'content':msg['message'], 'location':None}
-        result['timestamp'] = datetime.datetime.strptime(msg['updated_time'], self.date_format)
+        result['timestamp'] = self.parseTime(msg['updated_time'], self.date_format)
         return result
 
 

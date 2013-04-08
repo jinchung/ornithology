@@ -1,10 +1,17 @@
+"""
+Base class for producers that put content on the queue
+"""
+
 import threading
-import Queue
 import abc
 import re
 import datetime
 
-class Processor(threading.Thread):
+class Producer(threading.Thread):
+    """
+    Base class for producers that put content on the queue
+    """
+
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, msg_queue, dev_mode):
@@ -26,7 +33,12 @@ class Processor(threading.Thread):
         return
 
     @staticmethod
-    def parseTimezone(timestr, format):
+    def parse_time(timestr, fmt):
+        """
+        Custom time parsing function because datetime.datetime.strptime()
+        didn't handle UTC offset %z well
+        """
+
         regex = r'[+-][01]\d:?\d\d'
         offset = re.findall(regex, timestr)
         if offset:
@@ -36,12 +48,11 @@ class Processor(threading.Thread):
             timestr = timestr.replace(offset[0], '')
         else:
             delta = datetime.timedelta()
-        date = datetime.datetime.strptime(timestr, format)
+        date = datetime.datetime.strptime(timestr, fmt)
         return date + delta
-        
 
     @abc.abstractmethod
-    def map(self, raw_msg):
+    def map(self, _):
         """
         takes a dictionary and map
         each key of interest to
