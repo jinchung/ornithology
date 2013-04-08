@@ -1,15 +1,18 @@
-
-import datetime
+"""
+Producer for Facebook status updates
+"""
 import json
 import pycurl
 import time
 
-import processor
+import ornithology.producer
 
-class FacebookProcessor(processor.Processor):
-
-    def __init__(self, msg_queue, dev_mode):
-        super(FacebookProcessor, self).__init__(msg_queue, dev_mode)
+class FacebookProducer(ornithology.producer.Producer):
+    """
+    Facebook Producer thread for gathering status updates
+    """
+    def __init__(self, msg_queue):
+        super(FacebookProducer, self).__init__(msg_queue)
 
         self.attributes = ['message', 'updated_time']
         self.date_format = '%Y-%m-%dT%H:%M:%S'
@@ -31,12 +34,22 @@ class FacebookProcessor(processor.Processor):
             time.sleep(5)
 
     def write_function(self, data):
+        """
+        Callback for pycurl to write to buffer
+        """
         self.buffer += data
 
     def map(self, msg):
-        msg = {key:value for (key,value) in msg.items() if key in self.attributes}
-        result = {'source': 'facebook', 'color':self.colors['blue'], 'content':msg['message'], 'location':None}
-        result['timestamp'] = self.parseTime(msg['updated_time'], self.date_format)
+        msg = {key:value for (key, value) in msg.items() 
+               if key in self.attributes}
+        result = {
+                    'source': 'facebook', 
+                    'color':self.colors['blue'], 
+                    'content':msg['message'], 
+                    'location':None
+        }
+        result['timestamp'] = self.parse_time(msg['updated_time'], 
+                                             self.date_format)
         return result
 
 
