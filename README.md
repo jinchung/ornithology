@@ -6,11 +6,11 @@ with filtering the Twitter realtime feeds API for specified keywords.
 
 ##Usage
 
-For PROD mode:
-`$ python supervisor.py uSeRnAme Pa$$w0rD`
+`$ python supervisor.py`
 
-or for DEV mode:
-`$ python supervisor.py -D uSeRnAme Pa$$w0rD`
+##TO DO
+* Make consumer writes data to datadump/database
+* Make test server to create synthetic load
+* Segregate the inside of the while True loops into easier-to-test functions
+* Limit Queue size at instantiation
 
-DEV mode does not create a new connection to the Twitter streaming API 
-but instead uses pickled tweets for testing purposes.
