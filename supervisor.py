@@ -3,6 +3,7 @@ import sys
 import Queue
 import datetime
 import time
+import argparse
 
 import twitterprocessor
 import facebookprocessor
@@ -33,7 +34,7 @@ class Supervisor(object):
         self.username = username
         self.password = password
         self.msg_queue = Queue.Queue()
-        self.keywords = keywords
+        self.keywords = set(keywords)
         self.dev_mode = dev_mode
         self.metrics = {'qlength':0, 'num_msg':0, 'throughput':0.0, 'latency':0.0 } 
 
@@ -84,18 +85,13 @@ class Supervisor(object):
 
 
 if __name__=="__main__":
-    if len(sys.argv) == 3:
-        _, username, password = sys.argv
-        dev_mode = False
-    elif len(sys.argv) == 4 and sys.argv[1] in ["-d","-D"]:
-        _, dev_mode, username, password = sys.argv
-        dev_mode = True
-    else:
-        print(supervisor.__doc__)
+    default_keywords = ['death', 'oil', 'party','boy', 'girl', 'tonight', 'fun', 'cool', 'interest', 'rate', 'climbing', 'people']
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-u', '--username', help='Please enter username for social accounts', default='ornitweet')
+    parser.add_argument('-p', '--password', help='Please enter password for social accounts', default='ornithology')
+    parser.add_argument('-d', '--dev', help='Please specify if DEV mode or not (default is PROD)', action='store_true')
+    parser.add_argument('-k', '--keywords', nargs='+', help='Optional list of keywords with which to search social media', default=default_keywords)
+    args = parser.parse_args()
 
-    print("Please enter the keywords you want to monitor, separated by commas, and press enter: ")
-    keywords = sys.stdin.readline()
-    keywords = {word.strip() for word in keywords.split(',')}
-
-    Supervisor(username, password, keywords, dev_mode).launch()
+    Supervisor(args.username, args.password, args.keywords, args.dev).launch()
 
