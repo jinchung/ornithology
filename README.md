@@ -1,10 +1,10 @@
-
 #Ornithology
 
 Exploring threading module in Python for a sample producer-consumer problem
 with filtering the Twitter realtime feeds API for specified keywords. 
 
 ##Usage
+<pre>
 usage: supervisor.py [-h] [-u USERNAME] [-p PASSWORD]
                      [-k KEYWORDS [KEYWORDS ...]]
 
@@ -17,6 +17,7 @@ optional arguments:
   -k KEYWORDS [KEYWORDS ...], --keywords KEYWORDS [KEYWORDS ...]
                         Optional list of keywords withwhich to search social
                         media
+</pre>
 
 ##Wish List (in order)
 * Make consumer writes data to datadump/database
