@@ -11,16 +11,24 @@ with filtering API feeds for specified keywords.
 
 ###producer
 * Abstract class implemented by subclasses for each social media
+* Extends Thread class
 * Manages connections to external APIs and pushes data to consumer via queue
+* replayproducer is a special producer for dev mode which replays saved messages
 
 ###consumer
+* Extends Thread class
 * Single consumer which reads data from producers and searches for keywords
 specified by user (or default)
 * Updates metrics after processing messages
 
+###output
+* Application metrics (total message count, throughput, queue size, latency) are printed to the console
+* Messages with matching keywords are saved in logs/pretty_log.txt
+* Every message is appended as a json to logs/log.json
+
 ##Usage
 <pre>
-usage: supervisor.py [-h] [-u USERNAME] [-p PASSWORD]
+usage: supervisor.py [-h] [-u USERNAME] [-p PASSWORD] [-d]
                      [-k KEYWORDS [KEYWORDS ...]]
 
 optional arguments:
@@ -29,6 +37,7 @@ optional arguments:
                         Please enter username for social accounts
   -p PASSWORD, --password PASSWORD
                         Please enter password for social accounts
+  -d, --dev             Specify dev mode or not (default is PROD)
   -k KEYWORDS [KEYWORDS ...], --keywords KEYWORDS [KEYWORDS ...]
                         Optional list of keywords withwhich to search social
                         media
