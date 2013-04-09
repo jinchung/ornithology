@@ -14,7 +14,14 @@ class FacebookProducer(producer.Producer):
     def __init__(self, msg_queue):
         super(FacebookProducer, self).__init__(msg_queue)
 
-        self.attributes = ['message', 'updated_time']
+        self.attributes = [
+                              'message',
+                              'updated_time',
+                              'id',
+                              'from.name',
+                              'from.id'
+                          ]
+
         self.date_format = '%Y-%m-%dT%H:%M:%S'
 
         self.buffer = ""

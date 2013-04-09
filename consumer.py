@@ -5,6 +5,7 @@ and searches for keywords
 import threading
 import datetime
 import time
+import json
 
 COL1 = 10
 COL2 = 15
@@ -20,12 +21,16 @@ class Consumer(threading.Thread):
         self.msg_queue = msg_queue
         self.keywords = keywords
         self.update_metrics_callback = update_metrics
-        self.logfile = open('matched_msgs.log', 'w')
+        self.pretty_file = open('logs/pretty_log.txt', 'w')
+        self.log_file = open('logs/log.json', 'a')
         self.end = '\033[0m'
 
     def run(self):
         while True:
             msg = self.msg_queue.get(True)
+            self.process_msg(msg)
+
+    def process_msg(self, msg):
             time.sleep(0.01)
             text = set(msg['content'].lower().split())
             matches = self.keywords.intersection(text)
@@ -35,10 +40,14 @@ class Consumer(threading.Thread):
                 row += str(msg['timestamp']).rjust(COL3)
                 row += str(msg['location']).rjust(COL4)
                 row += '\n'
-                self.logfile.write(row)
-                self.logfile.flush()
+                self.pretty_file.write(row)
+                self.pretty_file.flush()
             latency = self.calculate_latency(msg['timestamp'])
             self.update_metrics_callback(latency)
+
+            the_json = msg
+            the_json['timestamp'] = str(the_json['timestamp'])
+            self.log_file.write(json.dumps(the_json))
 
     @staticmethod
     def calculate_latency(msg_timestamp):

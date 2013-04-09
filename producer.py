@@ -50,12 +50,21 @@ class Producer(threading.Thread):
         date = datetime.datetime.strptime(timestr, fmt)
         return date + delta
 
-    @abc.abstractmethod
-    def map(self, _):
+    def map(self, source, authorID, author, msgID, color,
+            content, location, timestamp):
         """
-        takes a dictionary and map
+        Map 
         each key of interest to
         global msg keys
         """
+        result = {
+                    'source': 'facebook', 
+                    'color':self.colors['blue'], 
+                    'content':msg['message'], 
+                    'location':None
+        }
+        result['timestamp'] = self.parse_time(msg['updated_time'], 
+                                             self.date_format)
+
         return
 

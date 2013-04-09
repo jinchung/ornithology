@@ -16,7 +16,15 @@ class TwitterProducer(producer.Producer):
         super(TwitterProducer, self).__init__(msg_queue)
 
         self.date_format = '%a %b %d %H:%M:%S %Y'
-        self.attributes = ['text', 'coordinates', 'created_at']
+        self.attributes = [
+                            'text',
+                            'coordinates',
+                            'created_at',
+                            'id_str',
+                            'user.id_str',
+                            'user.screen_name',
+                            'user.location'
+                          ]
 
         self.stream_url = 'https://stream.twitter.com/1.1/statuses/sample.json'
         self.username = username

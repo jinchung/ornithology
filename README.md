@@ -20,8 +20,8 @@ optional arguments:
 </pre>
 
 ##Wish List (in order)
-* Make consumer writes data to datadump/database
-* Separate synthetic processor that reads from file (no external APIs)
+* Add unique IDs to msgs
+* Separate synthetic processor that replay log file (no external APIs)
 * Segregate the inside of the while True loops into easier-to-test functions
 * Limit Queue size at instantiation
 * Frontend visualization
