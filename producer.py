@@ -17,15 +17,6 @@ class Producer(threading.Thread):
     def __init__(self, msg_queue):
         threading.Thread.__init__(self)
         self.msg_queue = msg_queue
-        self.colors = {
-            'red': '\033[31m',
-            'green': '\033[32m',
-            'yellow': '\033[33m',
-            'blue': '\033[34m', 
-            'purple': '\033[35m',
-            'cyan': '\033[36m',
-            'white': '\033[37m',
-        }
 
     @abc.abstractmethod
     def run(self):
@@ -50,22 +41,19 @@ class Producer(threading.Thread):
         date = datetime.datetime.strptime(timestr, fmt)
         return date + delta
 
-    def map_to_std_msg(self, source, authorID, author, msgID, color,
-            content, location, timestamp):
+    def msg_dict(self, source, content, timestamp, msgID=None,
+                authorID=None, author=None, color='white', location=None):
         """
-        Map 
-        each key of interest to
-        global msg keys
+        Create a dictionary of msg format from its inputs
         """
-        result = {
+        return  {
                     'source': source, 
+                    'content': content, 
+                    'timestamp': timestamp,
+                    'msgID': msgID,
                     'authorID': authorID,
                     'author': author,
-                    'msgID': msgID,
                     'color': color, 
-                    'content': content, 
-                    'location': location,
-                    'timestamp': timestamp
-        }
-        return result
+                    'location': location
+                }
 

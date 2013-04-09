@@ -23,7 +23,17 @@ class Consumer(threading.Thread):
         self.update_metrics_callback = update_metrics
         self.pretty_file = open('logs/pretty_log.txt', 'w')
         self.log_file = open('logs/log.json', 'a')
-        self.end = '\033[0m'
+
+        self.colors = {
+            'red': '\033[31m',
+            'green': '\033[32m',
+            'yellow': '\033[33m',
+            'blue': '\033[34m', 
+            'purple': '\033[35m',
+            'cyan': '\033[36m',
+            'white': '\033[37m',
+            'end': '\033[0m'
+        }
 
     def run(self):
         while True:
@@ -36,7 +46,8 @@ class Consumer(threading.Thread):
             matches = self.keywords.intersection(text)
             for match in matches:
                 row = match.rjust(COL1)
-                row += msg['color'] + msg['source'].rjust(COL2) + self.end
+                row += (self.colors[msg['color']] +
+                            msg['source'].rjust(COL2) + self.colors['end'])
                 row += str(msg['timestamp']).rjust(COL3)
                 row += str(msg['location']).rjust(COL4)
                 row += '\n'

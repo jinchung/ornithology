@@ -16,15 +16,6 @@ class TwitterProducer(producer.Producer):
         super(TwitterProducer, self).__init__(msg_queue)
 
         self.date_format = '%a %b %d %H:%M:%S %Y'
-        self.attributes = [
-                            'text',
-                            'coordinates',
-                            'created_at',
-                            'id_str',
-                            'user.id_str',
-                            'user.screen_name',
-                            'user.location'
-                          ]
 
         self.stream_url = 'https://stream.twitter.com/1.1/statuses/sample.json'
         self.username = username
@@ -43,27 +34,23 @@ class TwitterProducer(producer.Producer):
         """
         Behavior on the receival of content from Twitter
         """
-
         self.buffer += data
-        content = json.loads(self.buffer)
+        json_file = json.loads(self.buffer)
         self.buffer = ""
 
-        if 'text' in content.keys():
-            self.msg_queue.put(self.map(content))
+        if 'text' in json_file.keys():
+            msg = self.msg_dict(
+                            source = 'twitter',
+                            content = json_file['text'],
+                            timestamp = self.parse_time(
+                                            json_file['created_at'],
+                                            self.date_format),
+                            msgID = json_file['id_str'],
+                            authorID = json_file['user']['id_str'],
+                            author = json_file['user']['screen_name'],
+                            color = 'green',
+                            location = json_file['coordinates']
+            )
 
-    def map(self, tweet):
-        tweet = {key:value for (key,value) in tweet.items()
-                if key in self.attributes}
-
-        source = 'twitter'
-        #authorID
-        #author
-        #msgID
-        color = self.colors['green']
-        content = tweet['text']
-        location = tweet['coordinates']
-        timestamp = self.parse_time(tweet['created_at'], self.date_format)
-
-        return self.map_to_std_msg(source, authorID, author, msgID, color,
-                                   content, location, timestamp)
+            self.msg_queue.put(msg)
 

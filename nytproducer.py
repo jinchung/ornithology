@@ -19,7 +19,6 @@ class NYTProducer(producer.Producer):
     def __init__(self, msg_queue):
         super(NYTProducer, self).__init__(msg_queue)
 
-        self.attributes = ['title', 'abstract', 'updated_date', 'geo_facet']
         self.date_format = '%Y-%m-%dT%H:%M:%S'
 
         self.apikey = '7831b763eca627bc9b2967a43cb8a5e6:3:67531365'
@@ -36,12 +35,27 @@ class NYTProducer(producer.Producer):
             self.conn.perform()
             if self.buffer:
                 content = json.loads(self.buffer)
-                for msg in content["results"]:
-                    self.msg_queue.put(self.map(msg))
+                for json_file in content["results"]:
+                    msg = self.msg_dict(
+                            source = 'NYT',
+                            content = json_file['title'] +
+                                        ' - ' + json_file['abstract'],
+                            timestamp = self.parse_time(
+                                            json_file['updated_date'],
+                                            self.date_format),
+                            msgID = hash(json_file['byline'] +
+                                         json_file['created_date']),
+                            author = json_file['byline'],
+                            color = 'white',
+                            location = json_file['geo_facet']
+                    )
+                    self.msg_queue.put(msg)
+
             self.buffer = ""
             time.sleep(20) # max allowed requests for NYT Newswire API
                            # is 5000 requests per day
 
+        #self.attributes = ['title', 'abstract', 'updated_date', 'geo_facet']
     def write_function(self, data):
         """
         Callback for pycurl to write to buffer
@@ -59,7 +73,6 @@ class NYTProducer(producer.Producer):
         #author
         #msgID
         color = self.colors['white']
-        content = msg['title'] + ' - ' + msg['abstract']
         location = geo_facet
         timestamp = self.parse_time(msg['updated_date'], self.date_format)
 
