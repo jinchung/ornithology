@@ -52,26 +52,18 @@ class TwitterProducer(producer.Producer):
             self.msg_queue.put(self.map(content))
 
     def map(self, tweet):
-        tweet = {
-                    key:value
-                    for
-                    (key,value)
-                    in
-                    tweet.items()
-                    if
-                    key
-                    in
-                    self.attributes
-                }
+        tweet = {key:value for (key,value) in tweet.items()
+                if key in self.attributes}
 
-        result = {
-                    'source': 'twitter',
-                    'color':self.colors['green'],
-                    'content':tweet['text'],
-                    'location':tweet['coordinates']
-                 }
+        source = 'twitter'
+        #authorID
+        #author
+        #msgID
+        color = self.colors['green']
+        content = tweet['text']
+        location = tweet['coordinates']
+        timestamp = self.parse_time(tweet['created_at'], self.date_format)
 
-        result['timestamp'] = self.parse_time(tweet['created_at'],
-                                              self.date_format)
-        return result
+        return self.map_to_std_msg(source, authorID, author, msgID, color,
+                                   content, location, timestamp)
 

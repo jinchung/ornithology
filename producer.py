@@ -50,7 +50,7 @@ class Producer(threading.Thread):
         date = datetime.datetime.strptime(timestr, fmt)
         return date + delta
 
-    def map(self, source, authorID, author, msgID, color,
+    def map_to_std_msg(self, source, authorID, author, msgID, color,
             content, location, timestamp):
         """
         Map 
@@ -58,13 +58,14 @@ class Producer(threading.Thread):
         global msg keys
         """
         result = {
-                    'source': 'facebook', 
-                    'color':self.colors['blue'], 
-                    'content':msg['message'], 
-                    'location':None
+                    'source': source, 
+                    'authorID': authorID,
+                    'author': author,
+                    'msgID': msgID,
+                    'color': color, 
+                    'content': content, 
+                    'location': location,
+                    'timestamp': timestamp
         }
-        result['timestamp'] = self.parse_time(msg['updated_time'], 
-                                             self.date_format)
-
-        return
+        return result
 

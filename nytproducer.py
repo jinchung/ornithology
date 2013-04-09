@@ -49,28 +49,20 @@ class NYTProducer(producer.Producer):
         self.buffer += data
 
     def map(self, msg):
-        msg = {
-                key:value
-                for
-                (key,value)
-                in
-                msg.items()
-                if
-                key
-                in
-                self.attributes
-              }
+        msg = {key:value for (key,value) in msg.items()
+                if key in self.attributes}
 
         geo_facet = msg['geo_facet'][0] if msg['geo_facet'] else None
         
-        result = {
-                    'source': 'NYT',
-                    'color':self.colors['white'],
-                    'content':msg['title'] + ' - ' + msg['abstract'],
-                    'location':geo_facet
-                 }
-        
-        result['timestamp'] = self.parse_time(msg['updated_date'],
-                                              self.date_format)
-        return result
+        source = 'NYT'
+        #authorID
+        #author
+        #msgID
+        color = self.colors['white']
+        content = msg['title'] + ' - ' + msg['abstract']
+        location = geo_facet
+        timestamp = self.parse_time(msg['updated_date'], self.date_format)
+
+        return self.map_to_std_msg(source, authorID, author, msgID, color,
+                                   content, location, timestamp)
 

@@ -48,14 +48,19 @@ class FacebookProducer(producer.Producer):
     def map(self, msg):
         msg = {key:value for (key, value) in msg.items() 
                if key in self.attributes}
-        result = {
-                    'source': 'facebook', 
-                    'color':self.colors['blue'], 
-                    'content':msg['message'], 
-                    'location':None
-        }
-        result['timestamp'] = self.parse_time(msg['updated_time'], 
-                                             self.date_format)
-        return result
+        # above will not be able to extract user info
+
+        source = 'facebook'
+        #authorID = msg['']
+        #author
+        #msgID
+        color = self.colors['blue']
+        content = msg['message']
+        location = None
+        timestamp = self.parse_time(msg['updated_time'], self.date_format)
+
+        return self.map_to_std_msg(source, authorID, author, msgID, color,
+                                   content, location, timestamp)
+
 
 
