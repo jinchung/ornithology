@@ -45,8 +45,8 @@ class TwitterProducer(producer.Producer):
                             timestamp = self.parse_time(
                                             json_file['created_at'],
                                             self.date_format),
-                            msgID = json_file['id_str'],
-                            authorID = json_file['user']['id_str'],
+                            msg_id = json_file['id_str'],
+                            author_id = json_file['user']['id_str'],
                             author = json_file['user']['screen_name'],
                             color = 'green',
                             location = json_file['coordinates']

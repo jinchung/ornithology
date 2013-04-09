@@ -26,24 +26,30 @@ class FacebookProducer(producer.Producer):
     def run(self):
         while True:
             self.conn.perform()
-            content = json.loads(self.buffer)
-            for json_file in content["data"]:
-                msg = self.msg_dict(
-                            source = 'facebook',
-                            content = json_file['message'],
-                            timestamp = self.parse_time(
-                                            json_file['updated_time'],
-                                            self.date_format),
-                            msgID = json_file['id'],
-                            authorID = json_file['from']['id'],
-                            author = json_file['from']['name'],
-                            color = 'blue'
-                )
-                self.msg_queue.put(msg)
+            json_content = json.loads(self.buffer)
+            self.parse(json_content)
 
             self.buffer = ""
             time.sleep(5)
 
+    def parse(self, json_content):
+        """
+        Parse the content of the API's json response
+        into our predefined msg format
+        """
+        for json_file in json_content["data"]:
+            msg = self.msg_dict(
+                        source = 'facebook',
+                        content = json_file['message'],
+                        timestamp = self.parse_time(
+                                        json_file['updated_time'],
+                                        self.date_format),
+                        msg_id = json_file['id'],
+                        author_id = json_file['from']['id'],
+                        author = json_file['from']['name'],
+                        color = 'blue'
+            )
+            self.msg_queue.put(msg)
 
     def write_function(self, data):
         """

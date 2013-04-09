@@ -34,48 +34,37 @@ class NYTProducer(producer.Producer):
         while True:
             self.conn.perform()
             if self.buffer:
-                content = json.loads(self.buffer)
-                for json_file in content["results"]:
-                    msg = self.msg_dict(
-                            source = 'NYT',
-                            content = json_file['title'] +
-                                        ' - ' + json_file['abstract'],
-                            timestamp = self.parse_time(
-                                            json_file['updated_date'],
-                                            self.date_format),
-                            msgID = hash(json_file['byline'] +
-                                         json_file['created_date']),
-                            author = json_file['byline'],
-                            color = 'white',
-                            location = json_file['geo_facet']
-                    )
-                    self.msg_queue.put(msg)
+                json_content = json.loads(self.buffer)
+                self.parse(json_content)
 
             self.buffer = ""
             time.sleep(20) # max allowed requests for NYT Newswire API
                            # is 5000 requests per day
 
-        #self.attributes = ['title', 'abstract', 'updated_date', 'geo_facet']
+    def parse(self, json_content):
+        """
+        Parse the content of the API's json response
+        into our predefined msg format
+        """
+        for json_file in json_content["results"]:
+            msg = self.msg_dict(
+                    source = 'NYT',
+                    content = json_file['title'] +
+                                ' - ' + json_file['abstract'],
+                    timestamp = self.parse_time(
+                                    json_file['updated_date'],
+                                    self.date_format),
+                    msg_id = hash(json_file['byline'] +
+                                 json_file['created_date']),
+                    author = json_file['byline'],
+                    color = 'white',
+                    location = json_file['geo_facet']
+            )
+            self.msg_queue.put(msg)
+
     def write_function(self, data):
         """
         Callback for pycurl to write to buffer
         """
         self.buffer += data
-
-    def map(self, msg):
-        msg = {key:value for (key,value) in msg.items()
-                if key in self.attributes}
-
-        geo_facet = msg['geo_facet'][0] if msg['geo_facet'] else None
-        
-        source = 'NYT'
-        #authorID
-        #author
-        #msgID
-        color = self.colors['white']
-        location = geo_facet
-        timestamp = self.parse_time(msg['updated_date'], self.date_format)
-
-        return self.map_to_std_msg(source, authorID, author, msgID, color,
-                                   content, location, timestamp)
 

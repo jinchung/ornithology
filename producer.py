@@ -41,8 +41,9 @@ class Producer(threading.Thread):
         date = datetime.datetime.strptime(timestr, fmt)
         return date + delta
 
-    def msg_dict(self, source, content, timestamp, msgID=None,
-                authorID=None, author=None, color='white', location=None):
+    @staticmethod
+    def msg_dict(source, content, timestamp, msg_id=None,
+                author_id=None, author=None, color='white', location=None):
         """
         Create a dictionary of msg format from its inputs
         """
@@ -50,8 +51,8 @@ class Producer(threading.Thread):
                     'source': source, 
                     'content': content, 
                     'timestamp': timestamp,
-                    'msgID': msgID,
-                    'authorID': authorID,
+                    'msg_id': msg_id,
+                    'author_id': author_id,
                     'author': author,
                     'color': color, 
                     'location': location

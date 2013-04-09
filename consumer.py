@@ -41,24 +41,32 @@ class Consumer(threading.Thread):
             self.process_msg(msg)
 
     def process_msg(self, msg):
-            time.sleep(0.01)
-            text = set(msg['content'].lower().split())
-            matches = self.keywords.intersection(text)
-            for match in matches:
-                row = match.rjust(COL1)
-                row += (self.colors[msg['color']] +
-                            msg['source'].rjust(COL2) + self.colors['end'])
-                row += str(msg['timestamp']).rjust(COL3)
-                row += str(msg['location']).rjust(COL4)
-                row += '\n'
-                self.pretty_file.write(row)
-                self.pretty_file.flush()
-            latency = self.calculate_latency(msg['timestamp'])
-            self.update_metrics_callback(latency)
+        """
+        Do the work needed on every single message
+        """
+        time.sleep(0.01)
+        text = set(msg['content'].lower().split())
+        matches = self.keywords.intersection(text)
+        self.pretty_print(matches, msg)
+        latency = self.calculate_latency(msg['timestamp'])
+        self.update_metrics_callback(latency)
 
-            the_json = msg
-            the_json['timestamp'] = str(the_json['timestamp'])
-            self.log_file.write(json.dumps(the_json))
+        msg['timestamp'] = str(msg['timestamp'])
+        self.log_file.write(json.dumps(msg))
+
+    def pretty_print(self, matches, msg):
+        """
+        Format each match and print them to pretty file
+        """
+        for match in matches:
+            row = match.rjust(COL1)
+            row += (self.colors[msg['color']] +
+                        msg['source'].rjust(COL2) + self.colors['end'])
+            row += str(msg['timestamp']).rjust(COL3)
+            row += str(msg['location']).rjust(COL4)
+            row += '\n'
+            self.pretty_file.write(row)
+            self.pretty_file.flush()
 
     @staticmethod
     def calculate_latency(msg_timestamp):

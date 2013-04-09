@@ -20,11 +20,9 @@ optional arguments:
 </pre>
 
 ##Wish List (in order)
-* Add unique IDs to msgs
 * Separate synthetic processor that replay log file (no external APIs)
-* Segregate the inside of the while True loops into easier-to-test functions
-* Limit Queue size at instantiation
 * Frontend visualization
 * Test suite / unit testing
 * Add one or two more APIs
 * Indexing on incoming data
+

@@ -26,7 +26,7 @@ class Supervisor(object):
 
         self.username = username
         self.password = password
-        self.msg_queue = Queue.Queue()
+        self.msg_queue = Queue.Queue(maxsize=200)
         self.keywords = set(keywords)
         self.metrics = {
                 'qlength':0,
@@ -47,6 +47,8 @@ class Supervisor(object):
         """
         Launch whole application, producers and consumer
         """
+
+        # Launch every APIs
         twitter = twitterproducer.TwitterProducer(self.username,
                                                     self.password,
                                                     self.msg_queue)
@@ -58,6 +60,7 @@ class Supervisor(object):
         nyt = nytproducer.NYTProducer(self.msg_queue)
         nyt.start()
         
+        # Launch consumer
         con = consumer.Consumer(self.msg_queue, self.keywords,
                                 self.update_metrics)
         con.start()
@@ -75,13 +78,18 @@ class Supervisor(object):
             old_timestamp = now
             old_num_msg = self.metrics['num_msg']
 
-            row = str(self.metrics['num_msg']).rjust(20)
-            row += "{0:.2f}".format(self.metrics['throughput']).rjust(20)
-            row += str(self.metrics['qlength']).rjust(20)
-            row += "{0:.2f}".format(self.metrics['latency']).rjust(20)
-            print row
-
+            self.print_metrics()
             time.sleep(0.5)
+
+    def print_metrics(self):
+        """
+        Pretty print metrics to shell
+        """
+        row = str(self.metrics['num_msg']).rjust(20)
+        row += "{0:.2f}".format(self.metrics['throughput']).rjust(20)
+        row += str(self.metrics['qlength']).rjust(20)
+        row += "{0:.2f}".format(self.metrics['latency']).rjust(20)
+        print row
 
     def update_metrics(self, latency):
         """
