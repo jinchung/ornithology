@@ -45,6 +45,10 @@ optional arguments:
 
 ##Wish List (in order)
 * Glyph code review
+** Let Glyph drive what is important in the review
+** Touch upon benchmarking - are these good? Are they proper?
+** Overall architecture
+** Dive deep into line by line for a weaker part of the app
 * Frontend visualization
 * Test suite / unit testing
 * Add one or two more APIs
