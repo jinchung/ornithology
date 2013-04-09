@@ -20,7 +20,7 @@ optional arguments:
 </pre>
 
 ##Wish List (in order)
-* Separate synthetic processor that replay log file (no external APIs)
+* Glyph code review
 * Frontend visualization
 * Test suite / unit testing
 * Add one or two more APIs

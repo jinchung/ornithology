@@ -17,15 +17,17 @@ import twitterproducer
 import facebookproducer
 import nytproducer
 import consumer
+import replayproducer
 
 class Supervisor(object):
     """
     Supervisor class
     """
-    def __init__(self, username, password, keywords):
+    def __init__(self, username, password, dev_mode, keywords):
 
         self.username = username
         self.password = password
+        self.dev_mode = dev_mode
         self.msg_queue = Queue.Queue(maxsize=200)
         self.keywords = set(keywords)
         self.metrics = {
@@ -47,22 +49,26 @@ class Supervisor(object):
         """
         Launch whole application, producers and consumer
         """
-
+        
         # Launch every APIs
-        twitter = twitterproducer.TwitterProducer(self.username,
-                                                    self.password,
-                                                    self.msg_queue)
-        twitter.start()
-        
-        facebook = facebookproducer.FacebookProducer(self.msg_queue)
-        facebook.start()
-        
-        nyt = nytproducer.NYTProducer(self.msg_queue)
-        nyt.start()
+        if self.dev_mode:
+            replayer = replayproducer.ReplayProducer(self.msg_queue)
+            replayer.start()
+        else: 
+            twitter = twitterproducer.TwitterProducer(self.username,
+                                                        self.password,
+                                                        self.msg_queue)
+            twitter.start()
+            
+            facebook = facebookproducer.FacebookProducer(self.msg_queue)
+            facebook.start()
+            
+            nyt = nytproducer.NYTProducer(self.msg_queue)
+            nyt.start()
         
         # Launch consumer
         con = consumer.Consumer(self.msg_queue, self.keywords,
-                                self.update_metrics)
+                                self.update_metrics, self.dev_mode)
         con.start()
         
         old_timestamp = datetime.datetime.utcnow()
@@ -122,6 +128,10 @@ if __name__ == "__main__":
     PARSER.add_argument('-p', '--password',
                         help='Please enter password for social accounts',
                         default='ornithology')
+    
+    PARSER.add_argument('-d', '--dev',
+                        help='Specify dev mode or not (default is PROD)',
+                        action='store_true')
 
     PARSER.add_argument('-k', '--keywords', nargs='+',
                         help="Optional list of keywords with"
@@ -129,6 +139,5 @@ if __name__ == "__main__":
                         default=DEFAULT_KEYWORDS)
 
     ARGS = PARSER.parse_args()
-
-    Supervisor(ARGS.username, ARGS.password, ARGS.keywords).launch()
+    Supervisor(ARGS.username, ARGS.password, ARGS.dev, ARGS.keywords).launch()
 

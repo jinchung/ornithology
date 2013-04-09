@@ -16,13 +16,17 @@ class Consumer(threading.Thread):
     """
     Consumer thread that searches keywords for all messages
     """
-    def __init__(self, msg_queue, keywords, update_metrics):
+    def __init__(self, msg_queue, keywords, update_metrics, dev_mode):
         threading.Thread.__init__(self)
+        
         self.msg_queue = msg_queue
         self.keywords = keywords
         self.update_metrics_callback = update_metrics
         self.pretty_file = open('logs/pretty_log.txt', 'w')
-        self.log_file = open('logs/log.json', 'a')
+        self.dev_mode = dev_mode
+        
+        if not self.dev_mode:
+            self.log_file = open('logs/log.json', 'a')
 
         self.colors = {
             'red': '\033[31m',
@@ -51,8 +55,9 @@ class Consumer(threading.Thread):
         latency = self.calculate_latency(msg['timestamp'])
         self.update_metrics_callback(latency)
 
-        msg['timestamp'] = str(msg['timestamp'])
-        self.log_file.write(json.dumps(msg))
+        if not self.dev_mode:
+            msg['timestamp'] = str(msg['timestamp'])
+            self.log_file.write(json.dumps(msg) + '\n')
 
     def pretty_print(self, matches, msg):
         """
