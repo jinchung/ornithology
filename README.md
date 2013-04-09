@@ -1,7 +1,22 @@
 #Ornithology
 
 Exploring threading module in Python for a sample producer-consumer problem
-with filtering the Twitter realtime feeds API for specified keywords. 
+with filtering API feeds for specified keywords. 
+
+##Architecture
+###supervisor
+* Entry point of the application
+* Spawns all producer threads and the consumer thread
+* Manages benchmark metrics
+
+###producer
+* Abstract class implemented by subclasses for each social media
+* Manages connections to external APIs and pushes data to consumer via queue
+
+###consumer
+* Single consumer which reads data from producers and searches for keywords
+specified by user (or default)
+* Updates metrics after processing messages
 
 ##Usage
 <pre>
