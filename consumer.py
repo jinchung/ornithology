@@ -4,7 +4,7 @@ and searches for keywords
 """
 import threading
 import datetime
-import time
+#import time
 import json
 
 COL1 = 10
@@ -48,7 +48,7 @@ class Consumer(threading.Thread):
         """
         Do the work needed on every single message
         """
-        time.sleep(0.01)
+        #time.sleep(0.01)
         text = set(msg['content'].lower().split())
         matches = self.keywords.intersection(text)
         self.pretty_print(matches, msg)

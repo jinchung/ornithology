@@ -16,10 +16,13 @@ class ReplayProducer(producer.Producer):
         self.date_format = '%Y-%m-%d %H:%M:%S'
 
     def run(self): 
-        f = open('logs/log.json', 'r')
-        for line in f:
-            msg = json.loads(line)
+        logfile = open('logs/log.json', 'r')
+        for line in logfile:
+            try:
+                msg = json.loads(line)
+            except ValueError:
+                continue
             msg['timestamp'] = datetime.datetime.strptime(msg['timestamp'], 
-                                                          self.date_format)
+                                                          self.date_format) 
             self.msg_queue.put(msg)
 

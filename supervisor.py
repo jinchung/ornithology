@@ -52,8 +52,12 @@ class Supervisor(object):
         
         # Launch every APIs
         if self.dev_mode:
-            replayer = replayproducer.ReplayProducer(self.msg_queue)
-            replayer.start()
+            replayer1 = replayproducer.ReplayProducer(self.msg_queue)
+            replayer2 = replayproducer.ReplayProducer(self.msg_queue)
+            replayer3 = replayproducer.ReplayProducer(self.msg_queue)
+            replayer1.start()
+            replayer2.start()
+            replayer3.start()
         else: 
             twitter = twitterproducer.TwitterProducer(self.username,
                                                         self.password,
