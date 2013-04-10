@@ -2,12 +2,12 @@
 Base class for producers that put content on the queue
 """
 
-import threading
 import abc
 import re
 import datetime
 
-class Producer(threading.Thread):
+class Producer(object):
+
     """
     Base class for producers that put content on the queue
     """
@@ -15,7 +15,6 @@ class Producer(threading.Thread):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, msg_queue):
-        threading.Thread.__init__(self)
         self.msg_queue = msg_queue
 
     @abc.abstractmethod

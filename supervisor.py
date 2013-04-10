@@ -13,12 +13,15 @@ import datetime
 import time
 import argparse
 import ConfigParser
+import threading
 
 import twitterproducer
 import facebookproducer
 import nytproducer
 import consumer
 import replayproducer
+
+
 
 class Supervisor(object):
     """
@@ -45,39 +48,41 @@ class Supervisor(object):
         row += '\n'
         print row
 
-    def launch(self):  
-        """
-        Launch whole application, producers and consumer
-        """
-        
+    def producers(self):
         # Launch every APIs
         if self.dev_mode:
-            replayer1 = replayproducer.ReplayProducer(self.msg_queue)
-            replayer2 = replayproducer.ReplayProducer(self.msg_queue)
-            replayer3 = replayproducer.ReplayProducer(self.msg_queue)
-            replayer1.start()
-            replayer2.start()
-            replayer3.start()
+            yield replayproducer.ReplayProducer(self.msg_queue)
+            yield replayproducer.ReplayProducer(self.msg_queue)
+            yield replayproducer.ReplayProducer(self.msg_queue)
         else: 
-            twitter = twitterproducer.TwitterProducer(
+            yield twitterproducer.TwitterProducer(
                             self.config['Twitter']['username'],
                             self.config['Twitter']['password'],
                             self.msg_queue)
-            twitter.start()
             
-            facebook = facebookproducer.FacebookProducer(self.msg_queue)
-            facebook.start()
+            yield facebookproducer.FacebookProducer(self.msg_queue)
             
-            nyt = nytproducer.NYTProducer(
+            yield nytproducer.NYTProducer(
                             self.config['NYT']['api_key'],
                             self.msg_queue)
-            nyt.start()
-        
+
+    def consumers(self):
         # Launch consumer
-        con = consumer.Consumer(self.msg_queue, self.keywords,
+        yield consumer.Consumer(self.msg_queue, self.keywords,
                                 self.update_metrics, self.dev_mode)
-        con.start()
         
+    def launch(self):  
+        for producer in self.producers():
+            thread = threading.Thread(target=producer.run)
+            thread.start()
+
+        for consumer in self.consumers():
+            thread = threading.Thread(target=consumer.run)
+            thread.start()
+
+        """
+        Launch whole application, producers and consumer
+        """
         old_timestamp = datetime.datetime.utcnow()
         old_num_msg = 0
         while True:
