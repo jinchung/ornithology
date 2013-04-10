@@ -44,26 +44,22 @@ optional arguments:
 </pre>
 
 ##Wish List (in order)
-###Priority Cleanup
+###Cleanup
 * Hide API keys, username, password in config files in .gitignore or use an encryption library
 * Creating class for message dictionary with own to_json method (can't rely on __dict__ always)
+* Clean exit -add a signal handler to handle ctrl-C (send kill messages for each consumer into queue)
+* Handling error of not having a logs directory
+
+###Compositionality
+* Get rid of all subclassing of threading.Thread (use target)
+* Supervisor class - breaking out the launch function
+* Metrics should be separated into separate class (Monitor)
 
 ###Concurrency Model
 * Separate out concurrency model concerns (generating producers, consumers, msg queue, periodic execution)
 * Using generators for producers and consumers
 * Anything in a while True loop: extract body into own method
 * Various concurrency models in separate class - config to switch between them
-
-###Compositionality
-* Composition > Inheritance - anything shared should be in separate class not just in parent
-* Get rid of all subclassing of threading.Thread (use target)
-* Supervisor class - breaking out the launch function
-* Metrics should be separated into separate class (Monitor)
-* Zope.interface
-
-###Cleanup
-* Clean exit -add a signal handler to handle ctrl-C (send kill messages for each consumer into queue)
-* Handling error of not having a logs directory
 
 ###Long-Term TBD
 * More architecture thought needed for having monitors as downstream consumers
@@ -76,4 +72,5 @@ optional arguments:
 * Indexing on incoming data
 * Glyph - Touch upon benchmarking - are these good? Are they proper?
 * Glyph - Dive deep into line by line for a weaker part of the app
+* Zope.interface
 
