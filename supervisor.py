@@ -12,6 +12,7 @@ import Queue
 import datetime
 import time
 import argparse
+import ConfigParser
 
 import twitterproducer
 import facebookproducer
@@ -23,10 +24,9 @@ class Supervisor(object):
     """
     Supervisor class
     """
-    def __init__(self, username, password, dev_mode, keywords):
+    def __init__(self, config, dev_mode, keywords):
 
-        self.username = username
-        self.password = password
+        self.config = config
         self.dev_mode = dev_mode
         self.msg_queue = Queue.Queue(maxsize=200)
         self.keywords = set(keywords)
@@ -59,15 +59,18 @@ class Supervisor(object):
             replayer2.start()
             replayer3.start()
         else: 
-            twitter = twitterproducer.TwitterProducer(self.username,
-                                                        self.password,
-                                                        self.msg_queue)
+            twitter = twitterproducer.TwitterProducer(
+                            self.config['Twitter']['username'],
+                            self.config['Twitter']['password'],
+                            self.msg_queue)
             twitter.start()
             
             facebook = facebookproducer.FacebookProducer(self.msg_queue)
             facebook.start()
             
-            nyt = nytproducer.NYTProducer(self.msg_queue)
+            nyt = nytproducer.NYTProducer(
+                            self.config['NYT']['api_key'],
+                            self.msg_queue)
             nyt.start()
         
         # Launch consumer
@@ -108,8 +111,7 @@ class Supervisor(object):
         self.metrics['num_msg'] += 1
         self.metrics['latency'] = latency
 
-
-if __name__ == "__main__":
+def parse_args():
     DEFAULT_KEYWORDS = [
             'death',
             'oil',
@@ -124,24 +126,26 @@ if __name__ == "__main__":
             'climbing',
             'people'
     ]
-    PARSER = argparse.ArgumentParser()
-    PARSER.add_argument('-u', '--username',
-                        help='Please enter username for social accounts',
-                        default='ornitweet')
-
-    PARSER.add_argument('-p', '--password',
-                        help='Please enter password for social accounts',
-                        default='ornithology')
-    
-    PARSER.add_argument('-d', '--dev',
+    parser = argparse.ArgumentParser()
+   
+    parser.add_argument('-d', '--dev',
                         help='Specify dev mode or not (default is PROD)',
                         action='store_true')
 
-    PARSER.add_argument('-k', '--keywords', nargs='+',
+    parser.add_argument('-k', '--keywords', nargs='+',
                         help="Optional list of keywords with"
                              "which to search social media",
                         default=DEFAULT_KEYWORDS)
 
-    ARGS = PARSER.parse_args()
-    Supervisor(ARGS.username, ARGS.password, ARGS.dev, ARGS.keywords).launch()
+    return parser.parse_args()
+
+def get_config():
+    config = ConfigParser.RawConfigParser()
+    config.read('ornithology.cfg')
+    return {section:dict(config.items(section)) for section in config.sections()}
+
+if __name__ == "__main__":
+    ARGS = parse_args()
+    CONFIG = get_config()
+    Supervisor(CONFIG, ARGS.dev, ARGS.keywords).launch()
 
