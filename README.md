@@ -41,7 +41,6 @@ optional arguments:
 ##Wish List (in order)
 ###Cleanup
 * Clean exit -add a signal handler to handle ctrl-C (send kill messages for each consumer into queue)
-* Handling error of not having a logs directory
 
 ###Compositionality
 * Get rid of all subclassing of threading.Thread (use target)
