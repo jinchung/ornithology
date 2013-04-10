@@ -40,7 +40,6 @@ optional arguments:
 
 ##Wish List (in order)
 ###Cleanup
-* Creating class for message dictionary with own to_json method (can't rely on __dict__ always)
 * Clean exit -add a signal handler to handle ctrl-C (send kill messages for each consumer into queue)
 * Handling error of not having a logs directory
 

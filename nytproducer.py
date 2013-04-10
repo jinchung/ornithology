@@ -7,6 +7,7 @@ import pycurl
 import time
 
 import producer
+import message
 
 class NYTProducer(producer.Producer):
     """
@@ -44,7 +45,7 @@ class NYTProducer(producer.Producer):
         into our predefined msg format
         """
         for json_file in json_content["results"]:
-            msg = self.msg_dict(
+            msg = message.Message(
                     source = 'NYT',
                     content = json_file['title'] +
                                 ' - ' + json_file['abstract'],

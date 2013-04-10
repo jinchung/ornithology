@@ -41,20 +41,3 @@ class Producer(threading.Thread):
         date = datetime.datetime.strptime(timestr, fmt)
         return date + delta
 
-    @staticmethod
-    def msg_dict(source, content, timestamp, msg_id=None,
-                author_id=None, author=None, color='white', location=None):
-        """
-        Create a dictionary of msg format from its inputs
-        """
-        return  {
-                    'source': source, 
-                    'content': content, 
-                    'timestamp': timestamp,
-                    'msg_id': msg_id,
-                    'author_id': author_id,
-                    'author': author,
-                    'color': color, 
-                    'location': location
-                }
-

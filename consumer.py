@@ -7,6 +7,8 @@ import datetime
 #import time
 import json
 
+import message
+
 COL1 = 10
 COL2 = 15
 COL3 = 30
@@ -49,15 +51,15 @@ class Consumer(threading.Thread):
         Do the work needed on every single message
         """
         #time.sleep(0.01)
-        text = set(msg['content'].lower().split())
+        text = set(msg.content.lower().split())
         matches = self.keywords.intersection(text)
         self.pretty_print(matches, msg)
-        latency = self.calculate_latency(msg['timestamp'])
+        latency = self.calculate_latency(msg.timestamp)
         self.update_metrics_callback(latency)
 
         if not self.dev_mode:
-            msg['timestamp'] = str(msg['timestamp'])
-            self.log_file.write(json.dumps(msg) + '\n')
+            msg.timestamp = str(msg.timestamp)
+            self.log_file.write(msg.to_json() + '\n')
 
     def pretty_print(self, matches, msg):
         """
@@ -65,10 +67,10 @@ class Consumer(threading.Thread):
         """
         for match in matches:
             row = match.rjust(COL1)
-            row += (self.colors[msg['color']] +
-                        msg['source'].rjust(COL2) + self.colors['end'])
-            row += str(msg['timestamp']).rjust(COL3)
-            row += str(msg['location']).rjust(COL4)
+            row += (self.colors[msg.color] +
+                        msg.source.rjust(COL2) + self.colors['end'])
+            row += str(msg.timestamp).rjust(COL3)
+            row += str(msg.location).rjust(COL4)
             row += '\n'
             self.pretty_file.write(row)
             self.pretty_file.flush()

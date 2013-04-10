@@ -6,6 +6,7 @@ import pycurl
 import json
 
 import producer
+import message
 
 class TwitterProducer(producer.Producer):
     """
@@ -39,7 +40,7 @@ class TwitterProducer(producer.Producer):
         self.buffer = ""
 
         if 'text' in json_file.keys():
-            msg = self.msg_dict(
+            msg = message.Message(
                             source = 'twitter',
                             content = json_file['text'],
                             timestamp = self.parse_time(

@@ -6,6 +6,7 @@ import pycurl
 import time
 
 import producer
+import message
 
 class FacebookProducer(producer.Producer):
     """
@@ -38,7 +39,7 @@ class FacebookProducer(producer.Producer):
         into our predefined msg format
         """
         for json_file in json_content["data"]:
-            msg = self.msg_dict(
+            msg = message.Message(
                         source = 'facebook',
                         content = json_file['message'],
                         timestamp = self.parse_time(
