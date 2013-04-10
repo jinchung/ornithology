@@ -1,8 +1,5 @@
 """
-NYT User: Jin's email
-NYT Pwd: ornithology
-Application Registration Name: Ornithology
-Times Newswire API Key: 7831b763eca627bc9b2967a43cb8a5e6:3:67531365
+NYT Producer, passes NYC articles/blogs to consumer(s)
 """
 
 import json
@@ -16,12 +13,12 @@ class NYTProducer(producer.Producer):
     Base producer class for NYT API
     """
 
-    def __init__(self, msg_queue):
+    def __init__(self, api_key, msg_queue):
         super(NYTProducer, self).__init__(msg_queue)
 
         self.date_format = '%Y-%m-%dT%H:%M:%S'
 
-        self.apikey = '7831b763eca627bc9b2967a43cb8a5e6:3:67531365'
+        self.apikey = api_key
 
         self.buffer = ""
         self.stream_url = ("http://api.nytimes.com/svc/news/v3/content/all"

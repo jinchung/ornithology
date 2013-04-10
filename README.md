@@ -28,15 +28,10 @@ specified by user (or default)
 
 ##Usage
 <pre>
-usage: supervisor.py [-h] [-u USERNAME] [-p PASSWORD] [-d]
-                     [-k KEYWORDS [KEYWORDS ...]]
+usage: supervisor.py [-h] [-d] [-k KEYWORDS [KEYWORDS ...]]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -u USERNAME, --username USERNAME
-                        Please enter username for social accounts
-  -p PASSWORD, --password PASSWORD
-                        Please enter password for social accounts
   -d, --dev             Specify dev mode or not (default is PROD)
   -k KEYWORDS [KEYWORDS ...], --keywords KEYWORDS [KEYWORDS ...]
                         Optional list of keywords withwhich to search social
@@ -45,7 +40,6 @@ optional arguments:
 
 ##Wish List (in order)
 ###Cleanup
-* Hide API keys, username, password in config files in .gitignore or use an encryption library
 * Creating class for message dictionary with own to_json method (can't rely on __dict__ always)
 * Clean exit -add a signal handler to handle ctrl-C (send kill messages for each consumer into queue)
 * Handling error of not having a logs directory
