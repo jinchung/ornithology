@@ -39,18 +39,11 @@ optional arguments:
 </pre>
 
 ##Wish List (in order)
-###Cleanup
-* Clean exit -add a signal handler to handle ctrl-C (send kill messages for each consumer into queue)
-
-###Compositionality
-* Get rid of all subclassing of threading.Thread (use target)
-* Supervisor class - breaking out the launch function
-* Metrics should be separated into separate class (Monitor)
 
 ###Concurrency Model
-* Separate out concurrency model concerns (generating producers, consumers, msg queue, periodic execution)
-* Using generators for producers and consumers
+* Separate out concurrency model concerns (msg queue, periodic execution for monitoring)
 * Anything in a while True loop: extract body into own method
+* Metrics should be separated into separate class (Monitor)
 * Various concurrency models in separate class - config to switch between them
 
 ###Long-Term TBD

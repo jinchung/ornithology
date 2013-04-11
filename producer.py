@@ -16,9 +16,19 @@ class Producer(object):
 
     def __init__(self, msg_queue):
         self.msg_queue = msg_queue
+        self.alive = True
+
+    def stop(self):
+        """
+        Sets alive status to False in order to stop producer threads
+        """
+        self.alive = False
 
     @abc.abstractmethod
     def run(self):
+        """
+        Abstract method implemented by producers for thread to run
+        """
         return
 
     @staticmethod

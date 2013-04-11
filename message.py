@@ -4,7 +4,9 @@ Message class to represent standard message format
 import json
 
 class Message(object):
-
+    """
+    Standard message format
+    """
     def __init__(self, source, content, timestamp, msg_id=None,
                 author_id=None, author=None, color='white', location=None):
         """
@@ -19,7 +21,16 @@ class Message(object):
         self.color = color
         self.location = location
 
-
     def to_json(self):
-       return json.dumps(self.__dict__)
+        """
+        Transforms standard message into json string format
+        """
+        return json.dumps(self.__dict__)
+
+class ShutdownSignal(object):
+    """
+    Shutdown message type to notify consumer threads to exit
+    """
+    def __init__(self):
+        pass
 

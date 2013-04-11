@@ -18,9 +18,7 @@ class NYTProducer(producer.Producer):
         super(NYTProducer, self).__init__(msg_queue)
 
         self.date_format = '%Y-%m-%dT%H:%M:%S'
-
         self.apikey = api_key
-
         self.buffer = ""
         self.stream_url = ("http://api.nytimes.com/svc/news/v3/content/all"
                           "/all.json?api-key=" + self.apikey)
@@ -29,7 +27,7 @@ class NYTProducer(producer.Producer):
         self.conn.setopt(pycurl.WRITEFUNCTION, self.write_function)
 
     def run(self):
-        while True:
+        while self.alive:
             self.conn.perform()
             if self.buffer:
                 json_content = json.loads(self.buffer)
@@ -38,6 +36,7 @@ class NYTProducer(producer.Producer):
             self.buffer = ""
             time.sleep(20) # max allowed requests for NYT Newswire API
                            # is 5000 requests per day
+        self.conn.close()
 
     def parse(self, json_content):
         """

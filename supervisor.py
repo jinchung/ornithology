@@ -14,13 +14,15 @@ import time
 import argparse
 import ConfigParser
 import threading
+import signal
+import sys
 
 import twitterproducer
 import facebookproducer
 import nytproducer
 import consumer
 import replayproducer
-
+import message
 
 
 class Supervisor(object):
@@ -28,11 +30,12 @@ class Supervisor(object):
     Supervisor class
     """
     def __init__(self, config, dev_mode, keywords):
-
+        self.alive = True
         self.config = config
         self.dev_mode = dev_mode
         self.msg_queue = Queue.Queue(maxsize=200)
         self.keywords = set(keywords)
+        self.producers = []
         self.metrics = {
                 'qlength':0,
                 'num_msg':0,
@@ -48,44 +51,54 @@ class Supervisor(object):
         row += '\n'
         print row
 
-    def producers(self):
-        # Launch every APIs
+    def generate_producers(self):
+        """
+        Generate all producer objects
+        """
         if self.dev_mode:
-            yield replayproducer.ReplayProducer(self.msg_queue)
-            yield replayproducer.ReplayProducer(self.msg_queue)
-            yield replayproducer.ReplayProducer(self.msg_queue)
+            self.producers.append(replayproducer.ReplayProducer(self.msg_queue))
         else: 
-            yield twitterproducer.TwitterProducer(
+            self.producers.append(twitterproducer.TwitterProducer(
                             self.config['Twitter']['username'],
                             self.config['Twitter']['password'],
-                            self.msg_queue)
+                            self.msg_queue))
             
-            yield facebookproducer.FacebookProducer(self.msg_queue)
+            self.producers.append(
+                            facebookproducer.FacebookProducer(self.msg_queue))
             
-            yield nytproducer.NYTProducer(
+            self.producers.append(nytproducer.NYTProducer(
                             self.config['NYT']['api_key'],
-                            self.msg_queue)
+                            self.msg_queue))
 
     def consumers(self):
-        # Launch consumer
+        """
+        Generator that launches consumer(s)
+        """
         yield consumer.Consumer(self.msg_queue, self.keywords,
                                 self.update_metrics, self.dev_mode)
         
     def launch(self):  
-        for producer in self.producers():
+        """
+        Launch whole application: producers,consumer, system monitoring
+        """
+        self.generate_producers()
+        for producer in self.producers:
             thread = threading.Thread(target=producer.run)
             thread.start()
 
-        for consumer in self.consumers():
-            thread = threading.Thread(target=consumer.run)
+        for consumer_ in self.consumers():
+            thread = threading.Thread(target=consumer_.run)
             thread.start()
 
+        self.monitor_system()
+
+    def monitor_system(self):
         """
-        Launch whole application, producers and consumer
+        Start monitoring of system metrics
         """
         old_timestamp = datetime.datetime.utcnow()
         old_num_msg = 0
-        while True:
+        while self.alive:
             self.metrics['qlength'] = self.msg_queue.qsize()
             
             now = datetime.datetime.utcnow()
@@ -116,8 +129,22 @@ class Supervisor(object):
         self.metrics['num_msg'] += 1
         self.metrics['latency'] = latency
 
+    def clean_exit(self, *unused):
+        """
+        Clean exit that kills all producer and consumer threads
+        """
+        print 'Received exit signal. Please wait for cleanup...'
+        self.alive = False
+        for producer in self.producers:
+            producer.stop()
+        self.msg_queue.put(message.ShutdownSignal()) 
+        sys.exit(0)
+
 def parse_args():
-    DEFAULT_KEYWORDS = [
+    """
+    Argument setup and parsing
+    """
+    default_keywords = [
             'death',
             'oil',
             'party',
@@ -140,17 +167,22 @@ def parse_args():
     parser.add_argument('-k', '--keywords', nargs='+',
                         help="Optional list of keywords with"
                              "which to search social media",
-                        default=DEFAULT_KEYWORDS)
+                        default=default_keywords)
 
     return parser.parse_args()
 
 def get_config():
+    """
+    Retrieve and parse system config file
+    """
     config = ConfigParser.RawConfigParser()
     config.read('ornithology.cfg')
-    return {section:dict(config.items(section)) for section in config.sections()}
+    return {section:dict(config.items(section)) 
+            for section in config.sections()}
 
 if __name__ == "__main__":
     ARGS = parse_args()
     CONFIG = get_config()
-    Supervisor(CONFIG, ARGS.dev, ARGS.keywords).launch()
-
+    SUPER = Supervisor(CONFIG, ARGS.dev, ARGS.keywords)
+    signal.signal(signal.SIGINT, SUPER.clean_exit)
+    SUPER.launch()
