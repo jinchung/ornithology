@@ -2,23 +2,23 @@
 Consumer processes all incoming messages
 and searches for keywords
 """
-import threading
 import datetime
 #import time
-import json
+
+import message
 
 COL1 = 10
 COL2 = 15
 COL3 = 30
 COL4 = 15
 
-class Consumer(threading.Thread):
+class Consumer(object):
     """
-    Consumer thread that searches keywords for all messages
+    Consumer that searches keywords for all messages
     """
     def __init__(self, msg_queue, keywords, update_metrics, dev_mode):
-        threading.Thread.__init__(self)
         
+        self.alive = True
         self.msg_queue = msg_queue
         self.keywords = keywords
         self.update_metrics_callback = update_metrics
@@ -40,24 +40,34 @@ class Consumer(threading.Thread):
         }
 
     def run(self):
-        while True:
+        """
+        Run method for thread that begins consumer process
+        """
+        while self.alive:
             msg = self.msg_queue.get(True)
-            self.process_msg(msg)
+            if isinstance(msg, message.Message):
+                self.process_msg(msg)
+            else: 
+                self.alive = False
+                self.pretty_file.flush()
+                self.pretty_file.close()
+                self.log_file.flush()
+                self.log_file.close()
 
     def process_msg(self, msg):
         """
         Do the work needed on every single message
         """
         #time.sleep(0.01)
-        text = set(msg['content'].lower().split())
+        text = set(msg.content.lower().split())
         matches = self.keywords.intersection(text)
         self.pretty_print(matches, msg)
-        latency = self.calculate_latency(msg['timestamp'])
+        latency = self.calculate_latency(msg.timestamp)
         self.update_metrics_callback(latency)
 
         if not self.dev_mode:
-            msg['timestamp'] = str(msg['timestamp'])
-            self.log_file.write(json.dumps(msg) + '\n')
+            msg.timestamp = str(msg.timestamp)
+            self.log_file.write(msg.to_json() + '\n')
 
     def pretty_print(self, matches, msg):
         """
@@ -65,10 +75,10 @@ class Consumer(threading.Thread):
         """
         for match in matches:
             row = match.rjust(COL1)
-            row += (self.colors[msg['color']] +
-                        msg['source'].rjust(COL2) + self.colors['end'])
-            row += str(msg['timestamp']).rjust(COL3)
-            row += str(msg['location']).rjust(COL4)
+            row += (self.colors[msg.color] +
+                        msg.source.rjust(COL2) + self.colors['end'])
+            row += str(msg.timestamp).rjust(COL3)
+            row += str(msg.location).rjust(COL4)
             row += '\n'
             self.pretty_file.write(row)
             self.pretty_file.flush()
