@@ -6,6 +6,7 @@ import pycurl
 import time
 
 import producer
+import message
 
 class FacebookProducer(producer.Producer):
     """
@@ -16,7 +17,6 @@ class FacebookProducer(producer.Producer):
 
 
         self.date_format = '%Y-%m-%dT%H:%M:%S'
-
         self.buffer = ""
         self.stream_url = 'https://graph.facebook.com/search?q=*&type=post'
         self.conn = pycurl.Curl()
@@ -24,13 +24,14 @@ class FacebookProducer(producer.Producer):
         self.conn.setopt(pycurl.WRITEFUNCTION, self.write_function)
 
     def run(self):
-        while True:
+        while self.alive:
             self.conn.perform()
             json_content = json.loads(self.buffer)
             self.parse(json_content)
 
             self.buffer = ""
             time.sleep(5)
+        self.conn.close()
 
     def parse(self, json_content):
         """
@@ -38,7 +39,7 @@ class FacebookProducer(producer.Producer):
         into our predefined msg format
         """
         for json_file in json_content["data"]:
-            msg = self.msg_dict(
+            msg = message.Message(
                         source = 'facebook',
                         content = json_file['message'],
                         timestamp = self.parse_time(

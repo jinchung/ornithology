@@ -2,12 +2,12 @@
 Base class for producers that put content on the queue
 """
 
-import threading
 import abc
 import re
 import datetime
 
-class Producer(threading.Thread):
+class Producer(object):
+
     """
     Base class for producers that put content on the queue
     """
@@ -15,11 +15,20 @@ class Producer(threading.Thread):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, msg_queue):
-        threading.Thread.__init__(self)
         self.msg_queue = msg_queue
+        self.alive = True
+
+    def stop(self):
+        """
+        Sets alive status to False in order to stop producer threads
+        """
+        self.alive = False
 
     @abc.abstractmethod
     def run(self):
+        """
+        Abstract method implemented by producers for thread to run
+        """
         return
 
     @staticmethod
@@ -40,21 +49,4 @@ class Producer(threading.Thread):
             delta = datetime.timedelta()
         date = datetime.datetime.strptime(timestr, fmt)
         return date + delta
-
-    @staticmethod
-    def msg_dict(source, content, timestamp, msg_id=None,
-                author_id=None, author=None, color='white', location=None):
-        """
-        Create a dictionary of msg format from its inputs
-        """
-        return  {
-                    'source': source, 
-                    'content': content, 
-                    'timestamp': timestamp,
-                    'msg_id': msg_id,
-                    'author_id': author_id,
-                    'author': author,
-                    'color': color, 
-                    'location': location
-                }
 
