@@ -43,7 +43,7 @@ class TwitterProducer(producer.Producer):
             self.buffer = ""
 
             if 'text' in json_file.keys():
-                msg = message.Message(
+                msg = message.MediaMessage(
                                 source = 'twitter',
                                 content = json_file['text'],
                                 timestamp = self.parse_time(

@@ -16,14 +16,14 @@ class Consumer(object):
     """
     Consumer that searches keywords for all messages
     """
-    def __init__(self, msg_queue, keywords, update_metrics, dev_mode):
+    def __init__(self, msg_queue, update_metrics, dev_mode):
         
         self.alive = True
         self.msg_queue = msg_queue
-        self.keywords = keywords
         self.update_metrics_callback = update_metrics
         self.pretty_file = open('logs/pretty_log.txt', 'w')
         self.dev_mode = dev_mode
+        self.word_map = {}
         
         if not self.dev_mode:
             self.log_file = open('logs/log.json', 'a')
@@ -45,9 +45,16 @@ class Consumer(object):
         """
         while self.alive:
             msg = self.msg_queue.get(True)
-            if isinstance(msg, message.Message):
+            if msg.type == 'media':
+                print '1:', type(msg.timestamp), msg.source
                 self.process_msg(msg)
-            else: 
+            elif msg.type == 'connection':
+               for word in msg.keywords:
+                    if word in self.word_map:
+                        self.word_map[word].append(msg.socket) 
+                    else:
+                        self.word_map[word] = [msg.socket]
+            else: # msg type must be shutdown
                 self.alive = False
                 self.pretty_file.flush()
                 self.pretty_file.close()
@@ -58,15 +65,18 @@ class Consumer(object):
         """
         Do the work needed on every single message
         """
+        print '2:', type(msg.timestamp), msg.source
         #time.sleep(0.01)
-        text = set(msg.content.lower().split())
-        matches = self.keywords.intersection(text)
-        self.pretty_print(matches, msg)
+        for word in msg.content.lower().split():
+            for sock in self.word_map.get(word, []):
+                sock.sendall(msg.to_json())
+
+        #self.pretty_print(matches, msg)
+        print '3: ', type(msg.timestamp), msg.source
         latency = self.calculate_latency(msg.timestamp)
         self.update_metrics_callback(latency)
 
         if not self.dev_mode:
-            msg.timestamp = str(msg.timestamp)
             self.log_file.write(msg.to_json() + '\n')
 
     def pretty_print(self, matches, msg):
