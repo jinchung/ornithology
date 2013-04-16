@@ -127,6 +127,7 @@ class Supervisor(object):
     def loop(self, timeout):
         readable_socket, _, _ = select.select([self.listen_sock], 
                                               [], [], timeout)
+
         for sock in readable_socket:
             client_sock, _ = self.listen_sock.accept()
             request = client_sock.recv(1028)

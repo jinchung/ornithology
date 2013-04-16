@@ -12,5 +12,8 @@ default_keywords = 'death oil party boy girl tonight fun cool interest rate clim
 sock.sendall(default_keywords)
 while True:
     msg = sock.recv(20000)
+    print "\n\n the msg is" , len(msg) , "chars long"
     if msg:
-        print json.loads(msg)
+        print "msg:", msg
+        #print json.loads(msg)
+

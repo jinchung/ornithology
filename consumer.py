@@ -46,7 +46,6 @@ class Consumer(object):
         while self.alive:
             msg = self.msg_queue.get(True)
             if msg.type == 'media':
-                print '1:', type(msg.timestamp), msg.source
                 self.process_msg(msg)
             elif msg.type == 'connection':
                for word in msg.keywords:
@@ -65,14 +64,12 @@ class Consumer(object):
         """
         Do the work needed on every single message
         """
-        print '2:', type(msg.timestamp), msg.source
         #time.sleep(0.01)
         for word in msg.content.lower().split():
             for sock in self.word_map.get(word, []):
                 sock.sendall(msg.to_json())
 
         #self.pretty_print(matches, msg)
-        print '3: ', type(msg.timestamp), msg.source
         latency = self.calculate_latency(msg.timestamp)
         self.update_metrics_callback(latency)
 

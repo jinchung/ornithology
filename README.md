@@ -41,8 +41,11 @@ optional arguments:
 ##Wish List (in order)
 
 ###Concurrency Model
+* stop the server from crashing when a client disconnect
 * metrics: add number of clients connected at any time
+* fix clean exit (it freezes sometimes)
 * update README to not use keywords - for usage
+* more hygienic handling of buffer input on the client side
 * Testing should not be the same as dev mode
 * Select statement in supervisor for receiving incoming connection requests
 * Test separating out message types vs connection types
