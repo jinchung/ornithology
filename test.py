@@ -1,7 +1,7 @@
 import socket
 import json
 
-host = 'localhost'
+host = 'alexandre-1225B.local'
 port = 1234
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -13,4 +13,5 @@ sock.sendall(default_keywords)
 while True:
     msg = sock.recv(20000)
     if msg:
-        print json.loads(msg)
+        print msg
+        #print json.loads(msg)
