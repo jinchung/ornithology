@@ -5,13 +5,21 @@ import json
 
 class Message(object):
     """
-    Standard message format
+    Generic message format with type attribute
+    """
+    def __init__(self, type):
+        self.type = type
+
+class MediaMessage(Message):
+    """
+    Standard media message format
     """
     def __init__(self, source, content, timestamp, msg_id=None,
                 author_id=None, author=None, color='white', location=None):
         """
         Create a dictionary of msg format from its inputs
         """
+        super(MediaMessage, self).__init__('media')
         self.source = source 
         self.content = content 
         self.timestamp = timestamp
@@ -25,12 +33,31 @@ class Message(object):
         """
         Transforms standard message into json string format
         """
-        return json.dumps(self.__dict__)
+        tmp = dict(self.__dict__)
+        tmp['timestamp'] = str(tmp['timestamp'])
+        return json.dumps(tmp)
 
-class ShutdownSignal(object):
+class ConnectionMessage(Message):
+    """
+    Standard incoming connection request message
+    """
+    def __init__(self, socket, keywords):
+        super(ConnectionMessage, self).__init__('connection')
+        self.socket = socket
+        self.keywords = keywords
+
+class DisconnectionMessage(Message):
+    """
+    Standard incoming connection request message
+    """
+    def __init__(self, socket):
+        super(DisconnectionMessage, self).__init__('disconnection')
+        self.socket = socket
+
+class ShutdownSignal(Message):
     """
     Shutdown message type to notify consumer threads to exit
     """
     def __init__(self):
-        pass
+        super(ShutdownSignal, self).__init__('shutdown')
 

@@ -41,9 +41,24 @@ optional arguments:
 ##Wish List (in order)
 
 ###Concurrency Model
+* metrics: add number of clients connected at any time
+* fix clean exit (it freezes sometimes)
+* update README to not use keywords - for usage
+* more hygienic handling of buffer input on the client side
+* Testing should not be the same as dev mode
+* Select statement in supervisor for receiving incoming connection requests
+* Test separating out message types vs connection types
+* Create consumer vs dispatcher model
+* Supporting multiple users: 
+accepting ongoing connection requests, 
+creating a separate queue for each new user
+* Manage dev mode for setting up fake initial connection msg for replay prod
+* supervisor select should not wait for metrics to occur before reading any other selects - shouldn't be in same while loop
+* Consumer to contain self.user_words mapping between words and users interested in them
+* Consumer to have tokenizer functionality
+* Metrics should be separated into separate class (Monitor)
 * Separate out concurrency model concerns (msg queue, periodic execution for monitoring)
 * Anything in a while True loop: extract body into own method
-* Metrics should be separated into separate class (Monitor)
 * Various concurrency models in separate class - config to switch between them
 
 ###Long-Term TBD
