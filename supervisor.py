@@ -51,6 +51,8 @@ class Supervisor(object):
         self.listen_sock.bind((host, port))
         self.listen_sock.listen(100)
 
+        self.client_sockets = []
+
         self.old_timestamp = datetime.datetime.utcnow()
         self.old_num_msg = 0
         
@@ -125,15 +127,23 @@ class Supervisor(object):
         self.print_metrics()
 
     def loop(self, timeout):
-        readable_socket, _, _ = select.select([self.listen_sock], 
-                                              [], [], timeout)
+        all_sockets = self.client_sockets + [self.listen_sock]
+        readable_sockets, _, _ = select.select(all_sockets, [], [], timeout)
 
-        for sock in readable_socket:
-            client_sock, _ = self.listen_sock.accept()
-            request = client_sock.recv(1028)
-            keywords = request.split() 
-            connMsg = message.ConnectionMessage(client_sock, keywords)
-            self.msg_queue.put(connMsg) 
+        for sock in readable_sockets:
+            if sock == self.listen_sock: # new connection
+                client_sock, _ = sock.accept()
+                request = client_sock.recv(1028)
+                keywords = request.split() 
+                connMsg = message.ConnectionMessage(client_sock, keywords)
+                self.client_sockets.append(client_sock)
+                self.msg_queue.put(connMsg) 
+            else: # a client is telling us smtg
+                request = sock.recv(1028)
+                if not request: # a client disconnection
+                    self.client_sockets.remove(sock)
+                    disconnMsg = message.DisconnectionMessage(sock)
+                    self.msg_queue.put(disconnMsg) 
 
     def print_metrics(self):
         """

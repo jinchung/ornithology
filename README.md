@@ -41,7 +41,6 @@ optional arguments:
 ##Wish List (in order)
 
 ###Concurrency Model
-* stop the server from crashing when a client disconnect
 * metrics: add number of clients connected at any time
 * fix clean exit (it freezes sometimes)
 * update README to not use keywords - for usage
