@@ -39,7 +39,7 @@ class FacebookProducer(producer.Producer):
         into our predefined msg format
         """
         for json_file in json_content["data"]:
-            msg = message.Message(
+            msg = message.MediaMessage(
                         source = 'facebook',
                         content = json_file['message'],
                         timestamp = self.parse_time(

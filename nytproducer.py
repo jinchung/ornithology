@@ -44,7 +44,7 @@ class NYTProducer(producer.Producer):
         into our predefined msg format
         """
         for json_file in json_content["results"]:
-            msg = message.Message(
+            msg = message.MediaMessage(
                     source = 'NYT',
                     content = json_file['title'] +
                                 ' - ' + json_file['abstract'],
