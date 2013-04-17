@@ -8,11 +8,6 @@ import socket
 
 import message
 
-COL1 = 10
-COL2 = 15
-COL3 = 30
-COL4 = 15
-
 class Consumer(object):
     """
     Consumer that searches keywords for all messages
@@ -22,7 +17,6 @@ class Consumer(object):
         self.alive = True
         self.msg_queue = msg_queue
         self.update_metrics_callback = update_metrics
-        self.pretty_file = open('logs/pretty_log.txt', 'w')
         self.dev_mode = dev_mode
         self.word_to_clients = {}
         self.client_to_words = {}
@@ -62,8 +56,6 @@ class Consumer(object):
                 self.client_to_words.pop(msg.socket)
             else: # msg type must be shutdown
                 self.alive = False
-                self.pretty_file.flush()
-                self.pretty_file.close()
                 self.log_file.flush()
                 self.log_file.close()
 
@@ -71,41 +63,28 @@ class Consumer(object):
         """
         Do the work needed on every single message
         """
-#        print "client_to_words: ", self.client_to_words
-#        print "word_to_clients: ", self.word_to_clients
-        #time.sleep(0.01)
-        recipients = set()
-        for word in msg.content.lower().split():
+        recipients = {}
+        for word in set(msg.content.lower().split()):
             for sock in self.word_to_clients.get(word, []):
-                recipients.add(sock)
+                if sock in recipients:
+                    recipients[sock].append(word)
+                else:
+                    recipients[sock] = [word]
 
         for sock in recipients:
             try:
-                sock.sendall(msg.to_json())
+                msg_dict = msg.to_dict()
+                msg_dict['keywords'] = recipients[sock]
+                sock.sendall(str(msg_dict))
             except socket.error:
                 print "Disconnected client"
                 pass
 
-        #self.pretty_print(matches, msg)
         latency = self.calculate_latency(msg.timestamp)
         self.update_metrics_callback(latency)
 
         if not self.dev_mode:
             self.log_file.write(msg.to_json() + '\n')
-
-    def pretty_print(self, matches, msg):
-        """
-        Format each match and print them to pretty file
-        """
-        for match in matches:
-            row = match.rjust(COL1)
-            row += (self.colors[msg.color] +
-                        msg.source.rjust(COL2) + self.colors['end'])
-            row += str(msg.timestamp).rjust(COL3)
-            row += str(msg.location).rjust(COL4)
-            row += '\n'
-            self.pretty_file.write(row)
-            self.pretty_file.flush()
 
     @staticmethod
     def calculate_latency(msg_timestamp):

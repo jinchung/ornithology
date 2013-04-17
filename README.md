@@ -1,54 +1,52 @@
 #Ornithology
 
-Exploring threading module in Python for a sample producer-consumer problem
-with filtering API feeds for specified keywords. 
+Ornithology's purpose is for real-time monitoring of 
+arbitrary keywords in popular social media. 
+
+Currently, the sources are Twitter, Facebook, and the New York Times.
 
 ##Architecture
 ###supervisor
 * Entry point of the application
 * Spawns all producer threads and the consumer thread
-* Manages benchmark metrics
+* Manages application metrics (total message count, throughput, queue size, latency)
+* Listen for client connections / disconnections
 
-###producer
+###producers
 * Abstract class implemented by subclasses for each social media
-* Extends Thread class
 * Manages connections to external APIs and pushes data to consumer via queue
 * replayproducer is a special producer for dev mode which replays saved messages
 
 ###consumer
-* Extends Thread class
 * Single consumer which reads data from producers and searches for keywords
-specified by user (or default)
+specified by clients 
+* Dispatches matching messages to relevant clients 
 * Updates metrics after processing messages
 
-###output
-* Application metrics (total message count, throughput, queue size, latency) are printed to the console
-* Messages with matching keywords are saved in logs/pretty_log.txt
-* Every message is appended as a json to logs/log.json
+###messages
+The supervisor communicates with the clients via a shared queue of messages
+* Media - standard message for social media input
+* Connection - new connection request from client
+* Disconnection - disconnection from client
+* ShutdownSignal - termination of application
 
 ##Usage
 <pre>
-usage: supervisor.py [-h] [-d] [-k KEYWORDS [KEYWORDS ...]]
+usage: supervisor.py [-h] [-d]
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -d, --dev             Specify dev mode or not (default is PROD)
-  -k KEYWORDS [KEYWORDS ...], --keywords KEYWORDS [KEYWORDS ...]
-                        Optional list of keywords withwhich to search social
-                        media
+  -h, --help  show this help message and exit
+  -d, --dev   Specify dev mode or not (default is PROD)
 </pre>
 
 ##Wish List (in order)
 
 ###Concurrency Model
-* update README to not use keywords - for usage
-* metrics: add number of clients connected at any time
 * Testing should not be the same as dev mode
 * Create consumer vs dispatcher model
 * Manage dev mode for setting up fake initial connection msg for replay prod
 * supervisor select should not wait for metrics to occur before reading any other selects - shouldn't be in same while loop
 * Consumer to have tokenizer functionality
-* Metrics should be separated into separate class (Monitor)
 * Separate out concurrency model concerns (msg queue, periodic execution for monitoring)
 * Various concurrency models in separate class - config to switch between them
 

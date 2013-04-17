@@ -30,9 +30,11 @@ class NYTProducer(producer.Producer):
         while self.alive:
             self.conn.perform()
             if self.buffer:
-                json_content = json.loads(self.buffer)
-                self.parse(json_content)
-
+                try:
+                    json_content = json.loads(self.buffer)
+                    self.parse(json_content)
+                except ValueError:
+                    pass
             self.buffer = ""
             time.sleep(20) # max allowed requests for NYT Newswire API
                            # is 5000 requests per day
