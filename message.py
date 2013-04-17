@@ -46,6 +46,14 @@ class ConnectionMessage(Message):
         self.socket = socket
         self.keywords = keywords
 
+class DisconnectionMessage(Message):
+    """
+    Standard incoming connection request message
+    """
+    def __init__(self, socket):
+        super(DisconnectionMessage, self).__init__('disconnection')
+        self.socket = socket
+
 class ShutdownSignal(Message):
     """
     Shutdown message type to notify consumer threads to exit

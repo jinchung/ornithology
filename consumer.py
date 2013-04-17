@@ -3,6 +3,7 @@ Consumer processes all incoming messages
 and searches for keywords
 """
 import datetime
+import socket
 #import time
 
 import message
@@ -23,7 +24,8 @@ class Consumer(object):
         self.update_metrics_callback = update_metrics
         self.pretty_file = open('logs/pretty_log.txt', 'w')
         self.dev_mode = dev_mode
-        self.word_map = {}
+        self.word_to_clients = {}
+        self.client_to_words = {}
         
         if not self.dev_mode:
             self.log_file = open('logs/log.json', 'a')
@@ -46,14 +48,18 @@ class Consumer(object):
         while self.alive:
             msg = self.msg_queue.get(True)
             if msg.type == 'media':
-                print '1:', type(msg.timestamp), msg.source
                 self.process_msg(msg)
             elif msg.type == 'connection':
-               for word in msg.keywords:
-                    if word in self.word_map:
-                        self.word_map[word].append(msg.socket) 
+                self.client_to_words[msg.socket] = msg.keywords
+                for word in msg.keywords:
+                    if word in self.word_to_clients:
+                        self.word_to_clients[word].append(msg.socket) 
                     else:
-                        self.word_map[word] = [msg.socket]
+                        self.word_to_clients[word] = [msg.socket]
+            elif msg.type == 'disconnection':
+                for word in self.client_to_words[msg.socket]:
+                    self.word_to_clients[word].remove(msg.socket)
+                self.client_to_words.pop(msg.socket)
             else: # msg type must be shutdown
                 self.alive = False
                 self.pretty_file.flush()
@@ -65,14 +71,22 @@ class Consumer(object):
         """
         Do the work needed on every single message
         """
-        print '2:', type(msg.timestamp), msg.source
+#        print "client_to_words: ", self.client_to_words
+#        print "word_to_clients: ", self.word_to_clients
         #time.sleep(0.01)
+        recipients = set()
         for word in msg.content.lower().split():
-            for sock in self.word_map.get(word, []):
+            for sock in self.word_to_clients.get(word, []):
+                recipients.add(sock)
+
+        for sock in recipients:
+            try:
                 sock.sendall(msg.to_json())
+            except socket.error:
+                print "Disconnected client"
+                pass
 
         #self.pretty_print(matches, msg)
-        print '3: ', type(msg.timestamp), msg.source
         latency = self.calculate_latency(msg.timestamp)
         self.update_metrics_callback(latency)
 
