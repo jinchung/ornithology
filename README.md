@@ -41,36 +41,26 @@ optional arguments:
 ##Wish List (in order)
 
 ###Concurrency Model
-* metrics: add number of clients connected at any time
-* fix clean exit (it freezes sometimes)
 * update README to not use keywords - for usage
-* more hygienic handling of buffer input on the client side
+* metrics: add number of clients connected at any time
 * Testing should not be the same as dev mode
-* Select statement in supervisor for receiving incoming connection requests
-* Test separating out message types vs connection types
 * Create consumer vs dispatcher model
-* Supporting multiple users: 
-accepting ongoing connection requests, 
-creating a separate queue for each new user
 * Manage dev mode for setting up fake initial connection msg for replay prod
 * supervisor select should not wait for metrics to occur before reading any other selects - shouldn't be in same while loop
-* Consumer to contain self.user_words mapping between words and users interested in them
 * Consumer to have tokenizer functionality
 * Metrics should be separated into separate class (Monitor)
 * Separate out concurrency model concerns (msg queue, periodic execution for monitoring)
-* Anything in a while True loop: extract body into own method
 * Various concurrency models in separate class - config to switch between them
+
+###Client-side
+* more hygienic handling of buffer input
+* Frontend visualization
+* Pretty logging?
 
 ###Long-Term TBD
 * More architecture thought needed for having monitors as downstream consumers
-* Map / reduce behavior for funneling back in messages to write to logs without running into problems
-* Pretty log and json log should be separate consumer classes
-* Thinking about multiple users and hashing input
-* Frontend visualization
 * Test suite / unit testing
 * Add one or two more APIs
-* Indexing on incoming data
-* Glyph - Touch upon benchmarking - are these good? Are they proper?
-* Glyph - Dive deep into line by line for a weaker part of the app
+* Indexing on incoming data (hashing)
 * Zope.interface
 
