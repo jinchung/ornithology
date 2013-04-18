@@ -101,7 +101,7 @@ class Supervisor(object):
             if sock == self.listen_sock: # new connection
                 client_sock, _ = sock.accept()
                 request = client_sock.recv(1028)
-                keywords = request.lower()..split() 
+                keywords = request.lower().split() 
                 connMsg = message.ConnectionMessage(client_sock, keywords)
                 self.client_sockets.append(client_sock)
                 self.monitor.inc_clients()
