@@ -9,7 +9,6 @@ Password: ornithology
 """
 
 import Queue
-import datetime
 import time
 import argparse
 import ConfigParser
@@ -25,7 +24,7 @@ import nytproducer
 import consumer
 import replayproducer
 import message
-
+import monitor
 
 class Supervisor(object):
     """
@@ -37,12 +36,7 @@ class Supervisor(object):
         self.dev_mode = dev_mode
         self.msg_queue = Queue.Queue(maxsize=200)
         self.producers = []
-        self.metrics = {
-                'qlength':0,
-                'num_msg':0,
-                'throughput':0.0,
-                'latency':0.0
-        } 
+        self.monitor = monitor.Monitor()
 
         host = self.config['Socket']['host']
         port = int(self.config['Socket']['port'])
@@ -52,17 +46,6 @@ class Supervisor(object):
         self.listen_sock.listen(100)
 
         self.client_sockets = []
-
-        self.old_timestamp = datetime.datetime.utcnow()
-        self.old_num_msg = 0
-        
-        row = '\n'
-        row += "Total # of msgs".rjust(20)
-        row += "Throughput (msg/s)".rjust(20)
-        row += "Queue Length (Msgs)".rjust(20)
-        row += "Latency (s)".rjust(20)
-        row += '\n'
-        print row
 
     def generate_producers(self):
         """
@@ -88,7 +71,7 @@ class Supervisor(object):
         Generator that launches consumer(s)
         """
         yield consumer.Consumer(self.msg_queue, 
-                                self.update_metrics, self.dev_mode)
+                                self.monitor.metrics_callback, self.dev_mode)
         
     def launch(self):  
         """
@@ -107,25 +90,9 @@ class Supervisor(object):
 
     def supervise(self):
         while self.alive:
-            self.monitor_system()
+            self.monitor.update(self.msg_queue.qsize())
             self.loop(1)
     
-    def monitor_system(self):
-        """
-        Start monitoring of system metrics
-        """
-        self.metrics['qlength'] = self.msg_queue.qsize()
-        
-        now = datetime.datetime.utcnow()
-        time_delta = now - self.old_timestamp
-        num_msg_delta = self.metrics['num_msg'] - self.old_num_msg
-        self.metrics['throughput'] = (num_msg_delta /
-                                      time_delta.total_seconds())
-        self.old_timestamp = now
-        self.old_num_msg = self.metrics['num_msg']
-
-        self.print_metrics()
-
     def loop(self, timeout):
         all_sockets = self.client_sockets + [self.listen_sock]
         readable_sockets, _, _ = select.select(all_sockets, [], [], timeout)
@@ -137,30 +104,20 @@ class Supervisor(object):
                 keywords = request.split() 
                 connMsg = message.ConnectionMessage(client_sock, keywords)
                 self.client_sockets.append(client_sock)
+                self.monitor.inc_clients()
                 self.msg_queue.put(connMsg) 
             else: # a client is telling us smtg
-                request = sock.recv(1028)
+                print 'client is telling us something!'
+                try:
+                    request = sock.recv(1028)
+                except socket.error:
+                    request = None
                 if not request: # a client disconnection
+                    print 'client is disconnecting'
                     self.client_sockets.remove(sock)
                     disconnMsg = message.DisconnectionMessage(sock)
+                    self.monitor.dec_clients()
                     self.msg_queue.put(disconnMsg) 
-
-    def print_metrics(self):
-        """
-        Pretty print metrics to shell
-        """
-        row = str(self.metrics['num_msg']).rjust(20)
-        row += "{0:.2f}".format(self.metrics['throughput']).rjust(20)
-        row += str(self.metrics['qlength']).rjust(20)
-        row += "{0:.2f}".format(self.metrics['latency']).rjust(20)
-        print row
-
-    def update_metrics(self, latency):
-        """
-        Callback to consumer to update metrics
-        """
-        self.metrics['num_msg'] += 1
-        self.metrics['latency'] = latency
 
     def clean_exit(self, *unused):
         """
