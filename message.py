@@ -29,6 +29,14 @@ class MediaMessage(Message):
         self.color = color
         self.location = location
 
+    def to_dict(self):
+        """
+        Transforms standard message into dict
+        """
+        tmp = dict(self.__dict__)
+        tmp['timestamp'] = str(tmp['timestamp'])
+        return tmp
+
     def to_json(self):
         """
         Transforms standard message into json string format
