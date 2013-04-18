@@ -8,8 +8,9 @@ class Client(object):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
         self.sock.sendall(self.keywords)
-        self.template = '{0:^80}{1:^20}{2:^20}'
+        self.template = u'{0:^80}{1:^30}{2:^30}'
         print self.template.format('Content', 'Source', 'Timestamp')
+        self.template = u'{0:<80}{1:^30}{2:^30}'
         self.colors = {
             'red': '\033[31m',
             'green': '\033[32m',
@@ -26,30 +27,29 @@ class Client(object):
             payload = self.sock.recv(20000)
             if payload:
                 msgs = '[' + payload + ']'
-                msgs.replace('}{', '},{')  
-                print msgs
+                msgs = msgs.replace('}{', '},{')  
                 msgs = json.loads(msgs)
                 for msg in msgs:
                     self.pretty_print(msg)
 
     def pretty_print(self, msg):
         """
-        Format each match and print them to pretty file
+        Format each match and pretty print them
         """
-        content = self.prettify(msg['content'], msg['keywords'])
+        content = msg['content'][:75] + '...'
+        content_length = len(content)
         source = (self.colors[msg['color']] + 
                   msg['source'] + self.colors['end'])
-        print self.template.format(content, source, msg['timestamp'])
 
-    def prettify(self, content, keywords):
-        content = content[:75] + '...'
-        result = ''
+        aux = ''
         for word in content.split():
-            if word in keywords:
-                result += self.colors['green'] + word + self.colors['end'] + ' '
+            if word.lower() in msg['keywords']:
+                #aux += self.colors['green'] + word + self.colors['end'] + ' '
+                aux += self.colors['red'] + word + self.colors['end'] + ' '
             else:
-                result += word + ' '
-        return result
+                aux += word + ' '
+
+        print aux + self.template.format(content, source, msg['timestamp'])[content_length:]
 
 if __name__ == "__main__":
     host = 'localhost'
