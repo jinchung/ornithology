@@ -5,6 +5,7 @@ import json
 import datetime
 
 import producer
+import message
 
 class ReplayProducer(producer.Producer):
     """
@@ -24,5 +25,5 @@ class ReplayProducer(producer.Producer):
                 continue
             msg['timestamp'] = datetime.datetime.strptime(msg['timestamp'], 
                                                           self.date_format) 
-            self.msg_queue.put(msg)
+            self.msg_queue.put(message.MediaMessage(**msg))
 
