@@ -4,7 +4,7 @@ and searches for keywords
 """
 import datetime
 import socket
-#import time
+import json
 
 import message
 
@@ -24,17 +24,6 @@ class Consumer(object):
         if not self.dev_mode:
             self.log_file = open('logs/log.json', 'a')
 
-        self.colors = {
-            'red': '\033[31m',
-            'green': '\033[32m',
-            'yellow': '\033[33m',
-            'blue': '\033[34m', 
-            'purple': '\033[35m',
-            'cyan': '\033[36m',
-            'white': '\033[37m',
-            'end': '\033[0m'
-        }
-
     def run(self):
         """
         Run method for thread that begins consumer process
@@ -44,20 +33,21 @@ class Consumer(object):
             if msg.type == 'media':
                 self.process_msg(msg)
             elif msg.type == 'connection':
-                self.client_to_words[msg.socket] = msg.keywords
+                self.client_to_words[msg.sock] = msg.keywords
                 for word in msg.keywords:
                     if word in self.word_to_clients:
-                        self.word_to_clients[word].append(msg.socket) 
+                        self.word_to_clients[word].append(msg.sock) 
                     else:
-                        self.word_to_clients[word] = [msg.socket]
+                        self.word_to_clients[word] = [msg.sock]
             elif msg.type == 'disconnection':
-                for word in self.client_to_words[msg.socket]:
-                    self.word_to_clients[word].remove(msg.socket)
-                self.client_to_words.pop(msg.socket)
+                for word in self.client_to_words[msg.sock]:
+                    self.word_to_clients[word].remove(msg.sock)
+                self.client_to_words.pop(msg.sock)
             else: # msg type must be shutdown
                 self.alive = False
-                self.log_file.flush()
-                self.log_file.close()
+                if not self.dev_mode:
+                    self.log_file.flush()
+                    self.log_file.close()
 
     def process_msg(self, msg):
         """
@@ -75,7 +65,7 @@ class Consumer(object):
             try:
                 msg_dict = msg.to_dict()
                 msg_dict['keywords'] = recipients[sock]
-                sock.sendall(str(msg_dict))
+                sock.sendall(json.dumps(msg_dict))
             except socket.error:
                 print "Disconnected client"
                 pass
