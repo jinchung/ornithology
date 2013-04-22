@@ -30,6 +30,12 @@ The supervisor communicates with the clients via a shared queue of messages
 * Disconnection - disconnection from client
 * ShutdownSignal - termination of application
 
+##Installation
+Ornithology requires Twisted, zope.interface, setuptools
+<pre>
+$ pip install -r requires.txt
+</pre>
+
 ##Usage
 <pre>
 usage: supervisor.py [-h] [-d]
