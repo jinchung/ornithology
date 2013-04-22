@@ -1,0 +1,22 @@
+<html>
+   <head>
+      <script type="text/javascript">
+        var sock; 
+        window.onload = function() {
+            console.log("Hello here");
+ 
+            sock = new WebSocket("ws://10.5.98.34:9000");
+ 
+            sock.onmessage = function(e) {
+               console.log("Got echo: " + e.data);
+            }
+         }
+      </script>
+   </head>
+   <body>
+      <h1>WebSocket Echo Client</h1>
+      <button onclick='sock.send("Hello, world!");'>
+         Send Hello
+      </button>
+   </body>
+</html>
