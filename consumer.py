@@ -33,16 +33,19 @@ class Consumer(object):
             if msg.type == 'media':
                 self.process_msg(msg)
             elif msg.type == 'connection':
-                self.client_to_words[msg.sock] = msg.keywords
+                if msg.client in self.client_to_words:
+                    for word in self.client_to_words.get[msg.client]:
+                        self.word_to_clients[word].remove(msg.client)
                 for word in msg.keywords:
                     if word in self.word_to_clients:
-                        self.word_to_clients[word].append(msg.sock) 
+                        self.word_to_clients[word].append(msg.client) 
                     else:
-                        self.word_to_clients[word] = [msg.sock]
+                        self.word_to_clients[word] = [msg.client]
+                self.client_to_words[msg.client] = msg.keywords
             elif msg.type == 'disconnection':
-                for word in self.client_to_words[msg.sock]:
-                    self.word_to_clients[word].remove(msg.sock)
-                self.client_to_words.pop(msg.sock)
+                for word in self.client_to_words[msg.client]:
+                    self.word_to_clients[word].remove(msg.client)
+                self.client_to_words.pop(msg.client)
             else: # msg type must be shutdown
                 self.alive = False
                 if not self.dev_mode:
@@ -55,17 +58,17 @@ class Consumer(object):
         """
         recipients = {}
         for word in set(msg.content.lower().split()):
-            for sock in self.word_to_clients.get(word, []):
-                if sock in recipients:
-                    recipients[sock].append(word)
+            for client in self.word_to_clients.get(word, []):
+                if client in recipients:
+                    recipients[client].append(word)
                 else:
-                    recipients[sock] = [word]
+                    recipients[client] = [word]
 
-        for sock in recipients:
+        for client in recipients:
             try:
                 msg_dict = msg.to_dict()
-                msg_dict['keywords'] = recipients[sock]
-                sock.sendall(json.dumps(msg_dict))
+                msg_dict['keywords'] = recipients[client]
+                client.sendMessage(json.dumps(msg_dict), False)
             except socket.error:
                 print "Disconnected client"
                 pass

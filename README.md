@@ -46,6 +46,8 @@ optional arguments:
 </pre>
 
 ##Wish List (in order)
+* update README given websocket changes
+* fix the clean exit
 
 ###Concurrency Model
 * Testing should not be the same as dev mode

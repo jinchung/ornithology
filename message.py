@@ -52,22 +52,22 @@ class ConnectionMessage(Message):
     """
     Standard incoming connection request message
     """
-    def __init__(self, socket_, keywords):
-        msg_id = ('connection_' + socket_.getsockname()[0] + '_' + 
+    def __init__(self, client, keywords):
+        msg_id = ('connection_' + client.peerstr + '_' + 
                   str(datetime.datetime.utcnow()))
         super(ConnectionMessage, self).__init__(msg_id, 'connection')
-        self.sock = socket_
+        self.client = client
         self.keywords = keywords
 
 class DisconnectionMessage(Message):
     """
     Standard incoming connection request message
     """
-    def __init__(self, socket_):
-        msg_id = ('disconnection_' + socket_.getsockname()[0] + '_' +
+    def __init__(self, client):
+        msg_id = ('disconnection_' + client.peerstr + '_' +
                  str(datetime.datetime.utcnow())) 
         super(DisconnectionMessage, self).__init__(msg_id, 'disconnection')
-        self.sock = socket_
+        self.client = client
 
 class ShutdownSignal(Message):
     """
