@@ -1,21 +1,164 @@
 <html>
    <head>
+      <style>
+          body, html {
+            font-family: Helvetica, Sans-Serif;
+          }
+          #display {
+            float: left;
+            width: 650px;
+            height: 100%;
+          }
+          #metrics {
+            float: left;
+          }
+          .message {
+            padding: 5px 20px 5px 40px;
+            border-bottom: 1px dashed #aaa;
+          }
+          .message.twitter {
+            background: url('images/twitter-bird.png') no-repeat center left;
+          }
+          .message.NYT {
+            background: url('images/nytimes.png') no-repeat center left;
+          }
+          .message.facebook {
+            background: url('images/f_logo.png') no-repeat center left;
+          }
+          .message h2, .message h3 {
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+          }
+          .message h3 {
+            font-size: 12px;
+          }
+          .message p {
+            font-size: 14px;
+            margin: 2px 0;
+          }
+          .message p em {
+            background: #ffff33;
+            font-style: normal;
+          }
+      </style>
       <script type="text/javascript">
         var sock; 
-        window.onload = function() {
- 
-            sock = new WebSocket("ws://10.5.97.253:9000");
- 
-            sock.onmessage = function(e) {
-               var div = document.getElementById('display');
-               div.innerHTML = "<br/><br/>" + e.data + div.innerHTML;
-            }
-         };
+        var metrics;
+        var colors;
+        var metricsWidth  = 500;
+        var metricsHeight = 300;
+
+        function ColorSpectrumGenerator(){
+
+          var r = Math.ceil(Math.random() * 255 )
+            , b = Math.ceil(Math.random() * 255 )
+            , g = Math.ceil(Math.random() * 255 )
+            , rinc = Math.ceil(Math.random() * 3)
+            , binc = Math.ceil(Math.random() * 3)
+            , ginc = Math.ceil(Math.random() * 3)
+          ;
+
+          return function randomColor(opacity){
+            return  [ 'rgba(' +
+                  (r = (r += rinc) > 255 || r < 0 ? r += ( rinc = -rinc ) : r)
+                , (b = (b += binc) > 255 || b < 0 ? b += ( binc = -binc ) : b)
+                , (g = (g += ginc) > 255 || g < 0 ? g += ( ginc = -ginc ) : g)
+                , opacity+')'].join(',');
+          }
+        }
 
         function submitForm() {
-               var keywords = document.getElementById('keywords').value;
-               sock.send(keywords);
+            var keywords = document.getElementById('keywords').value;
+            var kw = keywords.split(' ');
+            metrics = {};
+            colors = {};
+            while(kw.length){
+              colors[kw[0]] = ColorSpectrumGenerator();
+              metrics[kw.shift()] = 0;
+            }
+            sock.send(keywords);
         };
+
+        function renderMetrics( ctx ){
+            var i = 0;
+            ctx.clearRect(0,0,metricsWidth,metricsHeight);
+            for( var k in metrics ){
+              i++;
+              if( metrics.hasOwnProperty(k) ){
+                ctx.fillStyle = colors[k](1);
+                ctx.textAlign = 'right';
+                ctx.fillText(k, 90, (30 * i)+10 );
+                ctx.fillRect( 100, 30 * i, Math.min( metrics[k]*2, 360 ), 20 );
+                ctx.textAlign = 'left';
+                ctx.fillText(metrics[k], Math.min( metrics[k]*2, 360 ) + 110, (30 * i)+10 );
+              }
+            }
+        }
+
+        window.onload = function() {
+            var display = document.getElementById('display');
+
+            sock = new WebSocket("ws://10.5.97.253:9000");
+            
+            console.log("setting onmessage");
+
+            // setup the canvas context
+            var ctx = document.getElementById("metrics").getContext('2d');
+            ctx.fillStyle = '#000';
+            ctx.textStyle = '20px Helvetica';
+
+            sock.onmessage = function(e) {
+               var messageData = JSON.parse(e.data)
+                 , message     = document.createElement('div')
+                 , content     = document.createElement('p')
+                 , info        = document.createElement('div')
+                 , author      = document.createElement('h2')
+                 , ts          = document.createElement('h3')
+               ;
+
+               console.log(messageData);
+
+               var i = messageData.keywords.length;
+               while(i--){
+                  metrics[messageData.keywords[i]]++;
+                  messageData.content = messageData.content.replace(new RegExp('('+messageData.keywords[i]+')','gi'), "<em style='background-color:"+colors[messageData.keywords[i]](0.33)+"'>$1</em>");
+               }
+
+               renderMetrics(ctx);
+
+               /* Build DOM elements for displaying message:
+                *
+                *  <div class="message %source%">
+                *      <div class="info">
+                *          <h2>%author%</h2>
+                *          <h3>%timestamp%</h3>
+                *      </div>
+                *      <p>
+                *        %content%
+                *      </p>
+                *  </div>
+                */
+
+               message.className = "message "+messageData.source;
+               info.className    = "info";
+
+               info.appendChild(author);
+               info.appendChild(ts);
+
+               message.appendChild(info);
+               message.appendChild(content);
+
+               author.innerHTML  = messageData.author;
+               ts.innertHTML     = messageData.timestamp;
+               content.innerHTML = messageData.content;
+
+               display.insertBefore(message, display.childNodes[0]);
+               while( display.childNodes.length > 250 ){
+                  display.removeChild(display.childNodes[display.childNodes.length-1]);                
+               }
+            }
+         };
 
       </script>
    </head>
@@ -27,6 +170,8 @@
       </form>
       <div id="display">
       </div>
+      <canvas id="metrics" width="500" height="300">
 
+      </canvas>
    </body>
 </html>
