@@ -9,7 +9,6 @@
             sock.onmessage = function(e) {
                var div = document.getElementById('display');
                div.innerHTML = "<br/><br/>" + e.data + div.innerHTML;
-               console.log(e.data);
             }
          };
 

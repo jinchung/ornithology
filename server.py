@@ -12,11 +12,9 @@ Password: ornithology
 import Queue
 import time
 import threading
-import sys
 
 from autobahn.websocket import WebSocketServerProtocol
 from autobahn.websocket import WebSocketServerFactory 
-from autobahn.websocket import listenWS 
 
 import twitterproducer
 import facebookproducer
@@ -37,13 +35,13 @@ class ServerProtocol(WebSocketServerProtocol):
 
 class ServerFactory(WebSocketServerFactory):
 
-    def __init__(self, url, config, dev_mode, debug = False, debugCodePaths = False):
+    def __init__(self, url, monitor, config, dev_mode, debug = False, debugCodePaths = False):
         WebSocketServerFactory.__init__(self, url, debug = debug, debugCodePaths = debugCodePaths)
         self.config = config
         self.dev_mode = dev_mode
         self.msg_queue = Queue.Queue(maxsize=200)
         self.producers = []
-        self.monitor = monitor.Monitor()
+        self.monitor = monitor
 
     def register(self, client, msg):
         keywords = msg.lower().split() 
@@ -99,6 +97,7 @@ class ServerFactory(WebSocketServerFactory):
 
     def monitor_callback(self):
         self.monitor.update(self.msg_queue.qsize())
+        self.monitor.broadcast()
         
     def clean_exit(self, *unused):
         """
@@ -107,6 +106,6 @@ class ServerFactory(WebSocketServerFactory):
         print 'Received exit signal. Please wait for cleanup...'
         for producer in self.producers:
             producer.stop()
+        self.monitor.clean_exit()
         self.msg_queue.put(message.ShutdownSignal()) 
-        sys.exit(0)
 

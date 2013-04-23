@@ -33,24 +33,11 @@ class Consumer(object):
             if msg.type == 'media':
                 self.process_msg(msg)
             elif msg.type == 'connection':
-                if msg.client in self.client_to_words:
-                    for word in self.client_to_words.get[msg.client]:
-                        self.word_to_clients[word].remove(msg.client)
-                for word in msg.keywords:
-                    if word in self.word_to_clients:
-                        self.word_to_clients[word].append(msg.client) 
-                    else:
-                        self.word_to_clients[word] = [msg.client]
-                self.client_to_words[msg.client] = msg.keywords
+                self.process_connection(msg)
             elif msg.type == 'disconnection':
-                for word in self.client_to_words[msg.client]:
-                    self.word_to_clients[word].remove(msg.client)
-                self.client_to_words.pop(msg.client)
+                self.process_disconnection(msg)
             else: # msg type must be shutdown
-                self.alive = False
-                if not self.dev_mode:
-                    self.log_file.flush()
-                    self.log_file.close()
+                self.process_shutdown()
 
     def process_msg(self, msg):
         """
@@ -78,6 +65,32 @@ class Consumer(object):
 
         if not self.dev_mode:
             self.log_file.write(msg.to_json() + '\n')
+
+    def process_connection(self, msg):
+        self.process_disconnection(msg) # clean slate, janitoring
+
+        for word in msg.keywords:
+            if word in self.word_to_clients:
+                self.word_to_clients[word].append(msg.client) 
+            else:
+                self.word_to_clients[word] = [msg.client]
+        self.client_to_words[msg.client] = msg.keywords
+
+    def process_disconnection(self, msg):
+        if msg.client in self.client_to_words:
+            for word in self.client_to_words[msg.client]:
+                self.word_to_clients[word].remove(msg.client)
+        self.client_to_words.pop(msg.client)
+
+    def process_shutdown(self):
+        self.alive = False
+
+        for client in self.client_to_words:
+            client.connectionLost()
+
+        if not self.dev_mode:
+            self.log_file.flush()
+            self.log_file.close()
 
     @staticmethod
     def calculate_latency(msg_timestamp):
