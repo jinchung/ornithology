@@ -50,6 +50,7 @@ optional arguments:
 * fix the clean exit
 
 ###Concurrency Model
+* thread unsafe datetime.strptime http://bugs.python.org/issue7980
 * Testing should not be the same as dev mode
 * Create consumer vs dispatcher model
 * Manage dev mode for setting up fake initial connection msg for replay prod
