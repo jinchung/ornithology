@@ -2,28 +2,27 @@
 Message class to represent standard message format
 """
 import json
-import socket
 import datetime
 
 class Message(object):
     """
     Generic message format with type attribute
     """
-    def __init__(self, msg_id, type):
-        self.msg_id = type
-        self.type = type
+    def __init__(self, msg_id, msg_type):
+        self.msg_id = msg_id
+        self.type = msg_type
 
 class MediaMessage(Message):
     """
     Standard media message format
     """
     def __init__(self, msg_id, source, content, timestamp, 
-                 type='media', author_id=None, author=None, 
+                 msg_type='media', author_id=None, author=None, 
                  color='white', location=None):
         """
         Create a dictionary of msg format from its inputs
         """
-        super(MediaMessage, self).__init__(msg_id, type)
+        super(MediaMessage, self).__init__(msg_id, msg_type)
         self.source = source 
         self.content = content 
         self.timestamp = timestamp
@@ -52,22 +51,22 @@ class ConnectionMessage(Message):
     """
     Standard incoming connection request message
     """
-    def __init__(self, socket_, keywords):
-        msg_id = ('connection_' + socket_.getsockname()[0] + '_' + 
+    def __init__(self, client, keywords):
+        msg_id = ('connection_' + client.peerstr + '_' + 
                   str(datetime.datetime.utcnow()))
         super(ConnectionMessage, self).__init__(msg_id, 'connection')
-        self.sock = socket_
+        self.client = client
         self.keywords = keywords
 
 class DisconnectionMessage(Message):
     """
     Standard incoming connection request message
     """
-    def __init__(self, socket_):
-        msg_id = ('disconnection_' + socket_.getsockname()[0] + '_' +
+    def __init__(self, client):
+        msg_id = ('disconnection_' + client.peerstr + '_' +
                  str(datetime.datetime.utcnow())) 
         super(DisconnectionMessage, self).__init__(msg_id, 'disconnection')
-        self.sock = socket_
+        self.client = client
 
 class ShutdownSignal(Message):
     """

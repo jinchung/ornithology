@@ -6,8 +6,6 @@ import datetime
 import socket
 import json
 
-import message
-
 class Consumer(object):
     """
     Consumer that searches keywords for all messages
@@ -33,21 +31,11 @@ class Consumer(object):
             if msg.type == 'media':
                 self.process_msg(msg)
             elif msg.type == 'connection':
-                self.client_to_words[msg.sock] = msg.keywords
-                for word in msg.keywords:
-                    if word in self.word_to_clients:
-                        self.word_to_clients[word].append(msg.sock) 
-                    else:
-                        self.word_to_clients[word] = [msg.sock]
+                self.process_connection(msg)
             elif msg.type == 'disconnection':
-                for word in self.client_to_words[msg.sock]:
-                    self.word_to_clients[word].remove(msg.sock)
-                self.client_to_words.pop(msg.sock)
+                self.process_disconnection(msg)
             else: # msg type must be shutdown
-                self.alive = False
-                if not self.dev_mode:
-                    self.log_file.flush()
-                    self.log_file.close()
+                self.process_shutdown()
 
     def process_msg(self, msg):
         """
@@ -55,26 +43,63 @@ class Consumer(object):
         """
         recipients = {}
         for word in set(msg.content.lower().split()):
-            for sock in self.word_to_clients.get(word, []):
-                if sock in recipients:
-                    recipients[sock].append(word)
+            for client in self.word_to_clients.get(word, []):
+                if client in recipients:
+                    recipients[client].append(word)
                 else:
-                    recipients[sock] = [word]
+                    recipients[client] = [word]
 
-        for sock in recipients:
+        for client in recipients:
             try:
                 msg_dict = msg.to_dict()
-                msg_dict['keywords'] = recipients[sock]
-                sock.sendall(json.dumps(msg_dict))
+                msg_dict['keywords'] = recipients[client]
+                client.sendMessage(json.dumps(msg_dict), False)
             except socket.error:
                 print "Disconnected client"
-                pass
 
         latency = self.calculate_latency(msg.timestamp)
         self.update_metrics_callback(latency)
 
         if not self.dev_mode:
             self.log_file.write(msg.to_json() + '\n')
+
+    def process_connection(self, msg):
+        """
+        handles a new connection
+        """
+
+        self.process_disconnection(msg) # clean slate, janitoring
+
+        for word in msg.keywords:
+            if word in self.word_to_clients:
+                self.word_to_clients[word].append(msg.client) 
+            else:
+                self.word_to_clients[word] = [msg.client]
+        self.client_to_words[msg.client] = msg.keywords
+
+    def process_disconnection(self, msg):
+        """
+        handles a disconnection
+        """
+
+        if msg.client in self.client_to_words:
+            for word in self.client_to_words[msg.client]:
+                self.word_to_clients[word].remove(msg.client)
+        self.client_to_words.pop(msg.client)
+
+    def process_shutdown(self):
+        """
+        handles a shutdown message
+        """
+
+        self.alive = False
+
+        for client in self.client_to_words:
+            client.connectionLost()
+
+        if not self.dev_mode:
+            self.log_file.flush()
+            self.log_file.close()
 
     @staticmethod
     def calculate_latency(msg_timestamp):

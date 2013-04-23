@@ -1,0 +1,5 @@
+setuptools==0.6c12dev-r88846
+zope.interface==4.0
+twisted==13.0
+autobahn==0.5.14
+
