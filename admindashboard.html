@@ -1,0 +1,22 @@
+<html>
+   <head>
+      <script type="text/javascript">
+        var sock; 
+        window.onload = function() {
+ 
+            sock = new WebSocket("ws://10.5.97.253:8888");
+ 
+            sock.onmessage = function(e) {
+               var div = document.getElementById('dashboard');
+               div.innerHTML = e.data;
+            }
+         };
+      </script>
+   </head>
+   <body>
+      <h1>Admin Dashboard</h1>
+      <br/>
+      <div id="dashboard">
+      </div>
+   </body>
+</html>

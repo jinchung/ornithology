@@ -1,0 +1,32 @@
+<html>
+   <head>
+      <script type="text/javascript">
+        var sock; 
+        window.onload = function() {
+ 
+            sock = new WebSocket("ws://10.5.97.253:9000");
+ 
+            sock.onmessage = function(e) {
+               var div = document.getElementById('display');
+               div.innerHTML = "<br/><br/>" + e.data + div.innerHTML;
+            }
+         };
+
+        function submitForm() {
+               var keywords = document.getElementById('keywords').value;
+               sock.send(keywords);
+        };
+
+      </script>
+   </head>
+   <body>
+      <h1>Web Monitor</h1>
+      <form id="keywords_form" action="javascript:submitForm();">
+          KEYWORDS : <input type="text" id="keywords">
+          <input type="submit" value="Submit">
+      </form>
+      <div id="display">
+      </div>
+
+   </body>
+</html>
