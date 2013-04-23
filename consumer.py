@@ -6,8 +6,6 @@ import datetime
 import socket
 import json
 
-import message
-
 class Consumer(object):
     """
     Consumer that searches keywords for all messages
@@ -58,7 +56,6 @@ class Consumer(object):
                 client.sendMessage(json.dumps(msg_dict), False)
             except socket.error:
                 print "Disconnected client"
-                pass
 
         latency = self.calculate_latency(msg.timestamp)
         self.update_metrics_callback(latency)
@@ -67,6 +64,10 @@ class Consumer(object):
             self.log_file.write(msg.to_json() + '\n')
 
     def process_connection(self, msg):
+        """
+        handles a new connection
+        """
+
         self.process_disconnection(msg) # clean slate, janitoring
 
         for word in msg.keywords:
@@ -77,12 +78,20 @@ class Consumer(object):
         self.client_to_words[msg.client] = msg.keywords
 
     def process_disconnection(self, msg):
+        """
+        handles a disconnection
+        """
+
         if msg.client in self.client_to_words:
             for word in self.client_to_words[msg.client]:
                 self.word_to_clients[word].remove(msg.client)
         self.client_to_words.pop(msg.client)
 
     def process_shutdown(self):
+        """
+        handles a shutdown message
+        """
+
         self.alive = False
 
         for client in self.client_to_words:

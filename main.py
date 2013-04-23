@@ -1,4 +1,8 @@
 
+"""
+Main entry point for the app
+"""
+
 from twisted.internet import reactor
 from twisted.internet import task
 
@@ -33,32 +37,39 @@ def get_config():
             for section in config.sections()}
 
 def clean_exit(*unused):
-    server_factory.clean_exit()
+    """
+    Clean exit when user presses Ctrl + C
+    Closes threads, websockets, and shared
+    data structures
+    """
+    del unused
+    SERVER_FACTORY.clean_exit()
     reactor.stop()
 
 if __name__ == "__main__":
     ARGS = parse_args()
     CONFIG = get_config()
 
-    monitor_host = CONFIG['MonitorSocket']['host']
-    monitor_port = CONFIG['MonitorSocket']['port']
-    monitor_url = 'ws://' + monitor_host + ':' + monitor_port
+    MONITOR_HOST = CONFIG['MonitorSocket']['host']
+    MONITOR_PORT = CONFIG['MonitorSocket']['port']
+    MONITOR_URL = 'ws://' + MONITOR_HOST + ':' + MONITOR_PORT
 
-    monitor_factory = monitor.MonitorServerFactory(monitor_url)
-    monitor_factory.protocol = monitor.MonitorServerProtocol
-    listenWS(monitor_factory)
+    MONITOR_FACTORY = monitor.MonitorServerFactory(MONITOR_URL)
+    MONITOR_FACTORY.protocol = monitor.MonitorServerProtocol
+    listenWS(MONITOR_FACTORY)
 
-    server_host = CONFIG['ServerSocket']['host']
-    server_port = CONFIG['ServerSocket']['port']
-    server_url = 'ws://' + server_host + ':' + server_port
+    SERVER_HOST = CONFIG['ServerSocket']['host']
+    SERVER_PORT = CONFIG['ServerSocket']['port']
+    SERVER_URL = 'ws://' + SERVER_HOST + ':' + SERVER_PORT
 
-    server_factory = server.ServerFactory(server_url, monitor_factory, CONFIG, ARGS.dev)
+    SERVER_FACTORY = server.ServerFactory(SERVER_URL, MONITOR_FACTORY,
+                                          CONFIG, ARGS.dev)
     signal.signal(signal.SIGINT, clean_exit)
-    server_factory.protocol = server.ServerProtocol
-    server_factory.setup()
-    listenWS(server_factory)
+    SERVER_FACTORY.protocol = server.ServerProtocol
+    SERVER_FACTORY.setup()
+    listenWS(SERVER_FACTORY)
 
-    monitor_task = task.LoopingCall(server_factory.monitor_callback)
-    monitor_task.start(1)
+    MONITOR_TASK = task.LoopingCall(SERVER_FACTORY.monitor_callback)
+    MONITOR_TASK.start(1)
     reactor.run()
 

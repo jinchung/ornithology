@@ -10,7 +10,6 @@ Password: ornithology
 """
 
 import Queue
-import time
 import threading
 
 from autobahn.websocket import WebSocketServerProtocol
@@ -22,9 +21,14 @@ import nytproducer
 import consumer
 import replayproducer
 import message
-import monitor
 
 class ServerProtocol(WebSocketServerProtocol):
+    """
+    Client protocol for the websockets
+    """
+
+    def init(self):
+        super(ServerProtocol, self).__init__()
 
     def onMessage(self, msg, binary):
         self.factory.register(self, msg)
@@ -34,9 +38,13 @@ class ServerProtocol(WebSocketServerProtocol):
         self.factory.unregister(self)
 
 class ServerFactory(WebSocketServerFactory):
-
-    def __init__(self, url, monitor, config, dev_mode, debug = False, debugCodePaths = False):
-        WebSocketServerFactory.__init__(self, url, debug = debug, debugCodePaths = debugCodePaths)
+    """
+    Factory for websockets clients.
+    """
+    def __init__(self, url, monitor, config, dev_mode,
+                 debug = False, debugCodePaths = False):
+        WebSocketServerFactory.__init__(self, url, debug = debug,
+                                        debugCodePaths = debugCodePaths)
         self.config = config
         self.dev_mode = dev_mode
         self.msg_queue = Queue.Queue(maxsize=200)
@@ -44,15 +52,22 @@ class ServerFactory(WebSocketServerFactory):
         self.monitor = monitor
 
     def register(self, client, msg):
+        """
+        register a new client
+        """
         keywords = msg.lower().split() 
-        connMsg = message.ConnectionMessage(client, keywords)
-        self.msg_queue.put(connMsg) 
+        conn_msg = message.ConnectionMessage(client, keywords)
+        self.msg_queue.put(conn_msg) 
         self.monitor.inc_clients()
-        print "New client! (or existing client changed keywords " + client.peerstr
+        print "New client! (or existing client changed keywords) ",
+        print client.peerstr
 
     def unregister(self, client):
-        disconnMsg = message.DisconnectionMessage(client)
-        self.msg_queue.put(disconnMsg) 
+        """
+        unregister a client
+        """
+        disconn_msg = message.DisconnectionMessage(client)
+        self.msg_queue.put(disconn_msg) 
         self.monitor.dec_clients()
         print "unregistered client " + client.peerstr
 
@@ -96,6 +111,11 @@ class ServerFactory(WebSocketServerFactory):
             thread.start()
 
     def monitor_callback(self):
+        """
+        function that is called periodically
+        from the twisted reactor to update
+        system metric
+        """
         self.monitor.update(self.msg_queue.qsize())
         self.monitor.broadcast()
         
@@ -103,6 +123,7 @@ class ServerFactory(WebSocketServerFactory):
         """
         Clean exit that kills all producer and consumer threads
         """
+        del unused
         print 'Received exit signal. Please wait for cleanup...'
         for producer in self.producers:
             producer.stop()
