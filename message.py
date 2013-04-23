@@ -2,28 +2,27 @@
 Message class to represent standard message format
 """
 import json
-import socket
 import datetime
 
 class Message(object):
     """
     Generic message format with type attribute
     """
-    def __init__(self, msg_id, type):
-        self.msg_id = type
-        self.type = type
+    def __init__(self, msg_id, msg_type):
+        self.msg_id = msg_id
+        self.type = msg_type
 
 class MediaMessage(Message):
     """
     Standard media message format
     """
     def __init__(self, msg_id, source, content, timestamp, 
-                 type='media', author_id=None, author=None, 
+                 msg_type='media', author_id=None, author=None, 
                  color='white', location=None):
         """
         Create a dictionary of msg format from its inputs
         """
-        super(MediaMessage, self).__init__(msg_id, type)
+        super(MediaMessage, self).__init__(msg_id, msg_type)
         self.source = source 
         self.content = content 
         self.timestamp = timestamp

@@ -9,7 +9,9 @@ from autobahn.websocket import WebSocketServerFactory
 from autobahn.websocket import WebSocketServerProtocol
 
 class MonitorServerProtocol(WebSocketServerProtocol):
-
+    """
+    Protocol for websocket connections with the Monitor Server
+    """
     def onOpen(self):
         self.factory.register(self)
 
@@ -24,7 +26,8 @@ class MonitorServerFactory(WebSocketServerFactory):
     """
 
     def __init__(self, url, debug = False, debugCodePaths = False):
-        WebSocketServerFactory.__init__(self, url, debug = debug, debugCodePaths = debugCodePaths)
+        WebSocketServerFactory.__init__(self, url, debug = debug, 
+                                        debugCodePaths = debugCodePaths)
         self.qlength = 0
         self.num_msg = 0
         self.throughput = 0.0
@@ -37,22 +40,33 @@ class MonitorServerFactory(WebSocketServerFactory):
         self.clients = []
 
     def register(self, client):
+        """
+        Registering new web socket connections
+        """
         if not client in self.clients:
             print "registered client " + client.peerstr
             self.clients.append(client)
 
     def unregister(self, client):
+        """
+        Unregistering existing web socket connections
+        """
         if client in self.clients:
             print "unregistered client " + client.peerstr
             self.clients.remove(client)
 
     def broadcast(self):
+        """
+        Broadcasting metrics data
+        """
         msg = json.dumps(self.metrics_dict())
-        
-        for c in self.clients:
-            c.sendMessage(msg)
+        for client in self.clients:
+            client.sendMessage(msg)
 
     def metrics_dict(self):
+        """
+        Put relevant metrics data of class into dict
+        """
         return {"num_msgs" : self.num_msg,
                 "throughput" : self.throughput, 
                 "queue_lenght" : self.qlength,
@@ -73,9 +87,15 @@ class MonitorServerFactory(WebSocketServerFactory):
         self.old_num_msg = self.num_msg
 
     def inc_clients(self):
+        """
+        Client count incrementor
+        """
         self.num_clients += 1
 
     def dec_clients(self):
+        """
+        Client count decrementor
+        """
         self.num_clients -= 1
      
     def metrics_callback(self, latency):
@@ -86,6 +106,9 @@ class MonitorServerFactory(WebSocketServerFactory):
         self.latency = latency
 
     def clean_exit(self):
+        """
+        Close all web socket connections on exit
+        """
         for client in self.clients:
             client.connectionLost()
 
