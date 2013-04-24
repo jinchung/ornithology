@@ -110,6 +110,6 @@ class MonitorServerFactory(WebSocketServerFactory):
         Close all web socket connections on exit
         """
         for client in self.clients:
-            client.connectionLost()
+            client.connectionLost("Server shutting down")
 
 

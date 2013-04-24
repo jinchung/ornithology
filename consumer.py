@@ -81,11 +81,10 @@ class Consumer(object):
         """
         handles a disconnection
         """
-
         if msg.client in self.client_to_words:
             for word in self.client_to_words[msg.client]:
                 self.word_to_clients[word].remove(msg.client)
-        self.client_to_words.pop(msg.client)
+            self.client_to_words.pop(msg.client)
 
     def process_shutdown(self):
         """
@@ -95,7 +94,7 @@ class Consumer(object):
         self.alive = False
 
         for client in self.client_to_words:
-            client.connectionLost()
+            client.connectionLost("Server shutting down")
 
         if not self.dev_mode:
             self.log_file.flush()
