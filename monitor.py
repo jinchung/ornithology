@@ -69,7 +69,7 @@ class MonitorServerFactory(WebSocketServerFactory):
         """
         return {"num_msgs" : self.num_msg,
                 "throughput" : self.throughput, 
-                "queue_lenght" : self.qlength,
+                "queue_length" : self.qlength,
                 "latency" : self.latency,
                 "num_clients" : self.num_clients}
 
