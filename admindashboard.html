@@ -1,22 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-   <head>
-      <script type="text/javascript">
-        var sock; 
-        window.onload = function() {
- 
-            sock = new WebSocket("ws://10.5.97.253:8888");
- 
-            sock.onmessage = function(e) {
-               var div = document.getElementById('dashboard');
-               div.innerHTML = e.data;
-            }
-         };
-      </script>
-   </head>
-   <body>
-      <h1>Admin Dashboard</h1>
-      <br/>
-      <div id="dashboard">
-      </div>
-   </body>
+<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Admin Dashboard</title>
+        <link href="examples.css" rel="stylesheet" type="text/css">
+        <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="excanvas.min.js"></script><![endif]-->
+        <script language="javascript" type="text/javascript" src="jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="jquery.flot.js"></script>
+        <script type="text/javascript">
+
+        $(function() {
+
+                // We use an inline data source in the example, usually data would
+                // be fetched from a server
+
+                var metrics = {
+                                qlength:0,
+                                num_msgs:0,
+                                throughput:0,
+                                num_clients:0,
+                                latency:0
+                              };
+
+                var qlength_array = [];
+                var num_msgs_array = [];
+                var throughput_array = [];
+                var num_clients_array = [];
+                var latency_array = [];
+                var i = 300;
+                while (i--) {
+                  qlength_array[i] = 0;
+                  num_msgs_array[i] = 0;
+                  throughput_array[i] = 0;
+                  num_clients_array[i] = 0;
+                  latency_array[i] = 0;
+                }
+
+                function getQueueLength() {
+
+                        qlength_array.push(metrics.qlength);
+                        qlength_array.shift();
+
+                        // Zip the generated y values with the x values
+
+                        var res = [];
+                        for (var i = 0; i < qlength_array.length; ++i) {
+                                res.push([i, qlength_array[i]])
+                        }
+
+                        return res;
+                }
+
+                function getNumMsgs() {
+
+                        num_msgs_array.push(metrics.num_msgs);
+                        num_msgs_array.shift();
+
+                        // Zip the generated y values with the x values
+
+                        var res = [];
+                        for (var i = 0; i < num_msgs_array.length; ++i) {
+                                res.push([i, num_msgs_array[i]])
+                        }
+
+                        return res;
+                }
+
+                function getThroughput() {
+
+                        throughput_array.push(metrics.throughput);
+                        throughput_array.shift();
+
+                        // Zip the generated y values with the x values
+
+                        var res = [];
+                        for (var i = 0; i < throughput_array.length; ++i) {
+                                res.push([i, throughput_array[i]])
+                        }
+
+                        return res;
+                }
+
+                function getNumClients() {
+
+                        num_clients_array.push(metrics.num_clients);
+                        num_clients_array.shift();
+
+                        // Zip the generated y values with the x values
+
+                        var res = [];
+                        for (var i = 0; i < num_clients_array.length; ++i) {
+                                res.push([i, num_clients_array[i]])
+                        }
+
+                        return res;
+                }
+
+                function getLatency() {
+
+                        latency_array.push(metrics.latency);
+                        latency_array.shift();
+
+                        // Zip the generated y values with the x values
+
+                        var res = [];
+                        for (var i = 0; i < latency_array.length; ++i) {
+                                res.push([i, latency_array[i]])
+                        }
+
+                        return res;
+                }
+
+                // Set up the control widget
+                var options = {
+                    series: { shadowSize: 0, color: "rgb(0, 0, 128)" },
+                    yaxis: { min: 0, max: 100},
+                    xaxis: { show: false }
+                };
+
+
+                function update() {
+
+                        options.yaxis.max = Math.max.apply(Math, qlength_array)+1;
+                        var plot_qlength = $.plot("#qlength_placeholder", [ getQueueLength() ], options);
+                        plot_qlength.setData([getQueueLength()]);
+                        plot_qlength.draw();
+
+                        options.yaxis.max = Math.max.apply(Math, num_msgs_array)+1;
+                        var plot_num_msgs = $.plot("#num_msgs_placeholder", [ getNumMsgs() ], options);
+                        plot_num_msgs.setData([getNumMsgs()]);
+                        plot_num_msgs.draw();
+
+                        options.yaxis.max = Math.max.apply(Math, throughput_array)+1;
+                        var plot_throughput = $.plot("#throughput_placeholder", [ getThroughput() ], options);
+                        plot_throughput.setData([getThroughput()]);
+                        plot_throughput.draw();
+
+                        options.yaxis.max = Math.max.apply(Math, num_clients_array)+1;
+                        var plot_num_clients = $.plot("#num_clients_placeholder", [ getNumClients() ], options);
+                        plot_num_clients.setData([getNumClients()]);
+                        plot_num_clients.draw();
+
+                        options.yaxis.max = Math.max.apply(Math, latency_array)+1;
+                        var plot_latency = $.plot("#latency_placeholder", [ getLatency() ], options);
+                        plot_latency.setData([getLatency()]);
+                        plot_latency.draw();
+
+                }
+
+                var sock; 
+                window.onload = function() {
+         
+                    sock = new WebSocket("ws://192.168.1.116:8888");
+         
+                    sock.onmessage = function(e) {
+                        var messageData = JSON.parse(e.data);
+                        metrics.qlength = messageData.queue_length;
+                        metrics.num_msgs = messageData.num_msgs;
+                        metrics.throughput = messageData.throughput;
+                        metrics.num_clients = messageData.num_clients;
+                        metrics.latency = messageData.latency;
+                        update();
+                    }
+                 };
+
+        });
+
+        </script>
+</head>
+<body>
+
+        <div id="header">
+                <h2>Admin Dashboard</h2>
+        </div>
+
+        <div id="content">
+
+                <div class="demo-container">
+
+                    <h4>Queue Length</h4>
+                        <div id="qlength_placeholder" class="demo-placeholder"></div>
+                    <h4>Cumulative # msgs</h4>
+                        <div id="num_msgs_placeholder" class="demo-placeholder"></div>
+                    <h4>Throughput (msgs/s)</h4>
+                        <div id="throughput_placeholder" class="demo-placeholder"></div>
+                    <h4># of clients</h4>
+                        <div id="num_clients_placeholder" class="demo-placeholder"></div>
+                    <h4>Latency (s)</h4>
+                        <div id="latency_placeholder" class="demo-placeholder"></div>
+                </div>
+
+        </div>
+
+</body>
 </html>
