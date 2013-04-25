@@ -1,9 +1,11 @@
 <html>
+<TITLE>Web Monitor</TITLE>
    <head>
       <style>
           body, html {
             font-family: Helvetica, Sans-Serif;
           }
+          DIV.dashboard_link {text-align: right}
           #display {
             float: left;
             width: 650px;
@@ -163,9 +165,12 @@
       </script>
    </head>
    <body>
+      <div class="dashboard_link">
+          <a href="dashboard.html">CHECKOUT THE APP DASHBOARD</a>
+      </div>
       <h1>Web Monitor</h1>
       <form id="keywords_form" action="javascript:submitForm();">
-          KEYWORDS : <input type="text" id="keywords">
+          Enter some words to monitor: <input type="text" id="keywords">
           <input type="submit" value="Submit">
       </form>
       <div id="display">
