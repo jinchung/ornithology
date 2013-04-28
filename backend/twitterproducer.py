@@ -26,6 +26,7 @@ class TwitterProducer(producer.Producer):
                          "%s:%s" % (self.username, self.password))
         self.conn.setopt(pycurl.URL, self.stream_url)
         self.conn.setopt(pycurl.WRITEFUNCTION, self.on_receive)
+        self.conn.setopt(pycurl.NOSIGNAL, 1)
 
     def run(self):
         try:

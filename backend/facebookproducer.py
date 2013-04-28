@@ -22,6 +22,7 @@ class FacebookProducer(producer.Producer):
         self.conn = pycurl.Curl()
         self.conn.setopt(pycurl.URL, self.stream_url)
         self.conn.setopt(pycurl.WRITEFUNCTION, self.write_function)
+        self.conn.setopt(pycurl.NOSIGNAL, 1)
 
     def run(self):
         while self.alive:

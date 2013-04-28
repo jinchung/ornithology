@@ -59,7 +59,7 @@ class ServerFactory(WebSocketServerFactory):
         conn_msg = message.ConnectionMessage(client, keywords)
         self.msg_queue.put(conn_msg) 
         self.monitor.inc_clients()
-        print "New client! (or existing client changed keywords) ",
+        print "New user! (or existing user changed keywords) ",
         print client.peerstr
 
     def unregister(self, client):
@@ -69,7 +69,7 @@ class ServerFactory(WebSocketServerFactory):
         disconn_msg = message.DisconnectionMessage(client)
         self.msg_queue.put(disconn_msg) 
         self.monitor.dec_clients()
-        print "unregistered client " + client.peerstr
+        print "User " + client.peerstr + " left\n"
 
     def generate_producers(self):
         """
@@ -95,7 +95,9 @@ class ServerFactory(WebSocketServerFactory):
         Generator that launches consumer(s)
         """
         yield consumer.Consumer(self.msg_queue, 
-                                self.monitor.metrics_callback, self.dev_mode)
+                                self.monitor.metrics_callback,
+                                self.dev_mode,
+                                self.config['Configs']['archiving'].lower()=='true')
         
     def setup(self):  
         """

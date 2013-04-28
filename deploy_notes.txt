@@ -1,0 +1,13 @@
+
+# To shh, first make sure your key has proper access level:
+
+$ chmod 600 ornithology.pem
+
+# then
+
+$ ssh -i ornithology.pem ubuntu@ec2-54-224-67-130.compute-1.amazonaws.com
+
+# use scp to copy or overwrite files from your local machine to the ec2 instance
+
+scp -i ornithology.pem /path/to/files/* ubuntu@ec2-54-224-67-130.compute-1.amazonaws.com:public_html/
+

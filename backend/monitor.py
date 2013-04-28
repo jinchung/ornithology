@@ -44,7 +44,7 @@ class MonitorServerFactory(WebSocketServerFactory):
         Registering new web socket connections
         """
         if not client in self.clients:
-            print "registered client " + client.peerstr
+            print "registered admin " + client.peerstr
             self.clients.append(client)
 
     def unregister(self, client):
@@ -52,7 +52,7 @@ class MonitorServerFactory(WebSocketServerFactory):
         Unregistering existing web socket connections
         """
         if client in self.clients:
-            print "unregistered client " + client.peerstr
+            print "admin " + client.peerstr + " left"
             self.clients.remove(client)
 
     def broadcast(self):

@@ -2,25 +2,30 @@
 Consumer processes all incoming messages
 and searches for keywords
 """
+import os.path
 import datetime
 import socket
 import json
+import collections
 
 class Consumer(object):
     """
     Consumer that searches keywords for all messages
     """
-    def __init__(self, msg_queue, update_metrics, dev_mode):
+    def __init__(self, msg_queue, update_metrics, dev_mode, archiving):
         
         self.alive = True
         self.msg_queue = msg_queue
         self.update_metrics_callback = update_metrics
         self.dev_mode = dev_mode
-        self.word_to_clients = {}
-        self.client_to_words = {}
-        
-        if not self.dev_mode:
-            self.log_file = open('logs/log.json', 'a')
+        self.archiving = archiving
+        self.word_to_clients = collections.defaultdict(lambda: list())
+        self.client_to_words = collections.defaultdict(lambda: list())
+
+        if not self.dev_mode and self.archiving:
+            base, _ = os.path.split(os.path.dirname(__file__))
+            log_file = os.path.join(base, "logs", "log.json")
+            self.log_file = open(log_file, 'a')
 
     def run(self):
         """
@@ -41,26 +46,23 @@ class Consumer(object):
         """
         Do the work needed on every single message
         """
-        recipients = {}
+        recipients = collections.defaultdict(lambda: list())
         for word in set(msg.content.lower().split()):
             for client in self.word_to_clients.get(word, []):
-                if client in recipients:
-                    recipients[client].append(word)
-                else:
-                    recipients[client] = [word]
+                recipients[client].append(word)
 
         for client in recipients:
+            msg_dict = msg.to_dict()
+            msg_dict['keywords'] = recipients[client]
             try:
-                msg_dict = msg.to_dict()
-                msg_dict['keywords'] = recipients[client]
                 client.sendMessage(json.dumps(msg_dict), False)
             except socket.error:
-                print "Disconnected client"
+                print "User got disconnected"
 
         latency = self.calculate_latency(msg.timestamp)
         self.update_metrics_callback(latency)
 
-        if not self.dev_mode:
+        if not self.dev_mode and self.archiving:
             self.log_file.write(msg.to_json() + '\n')
 
     def process_connection(self, msg):
@@ -71,10 +73,8 @@ class Consumer(object):
         self.process_disconnection(msg) # clean slate, janitoring
 
         for word in msg.keywords:
-            if word in self.word_to_clients:
-                self.word_to_clients[word].append(msg.client) 
-            else:
-                self.word_to_clients[word] = [msg.client]
+            self.word_to_clients[word].append(msg.client) 
+
         self.client_to_words[msg.client] = msg.keywords
 
     def process_disconnection(self, msg):
@@ -96,7 +96,7 @@ class Consumer(object):
         for client in self.client_to_words:
             client.connectionLost("Server shutting down")
 
-        if not self.dev_mode:
+        if not self.dev_mode and self.archiving:
             self.log_file.flush()
             self.log_file.close()
 
