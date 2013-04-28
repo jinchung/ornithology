@@ -11,3 +11,9 @@ $ ssh -i ornithology.pem ubuntu@ec2-54-224-67-130.compute-1.amazonaws.com
 
 scp -i ornithology.pem /path/to/files/* ubuntu@ec2-54-224-67-130.compute-1.amazonaws.com:public_html/
 
+# visit these sites for a walkthrough:
+
+http://www.name.com/blog/general/development/2012/01/so-you-want-free-web-hosting-an-amazon-ec2-how-to/
+
+http://www.maketecheasier.com/install-and-configure-apache-in-ubuntu/2011/03/09
+
