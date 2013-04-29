@@ -101,9 +101,9 @@
         window.onload = function() {
             var display = document.getElementById('display');
 
-            sock = new WebSocket("ws://192.168.1.116:9000");
+            sock = new WebSocket("ws://54.224.117.136:9000");
             
-            console.log("setting onmessage");
+            console.log("setting onmessage ");
 
             // setup the canvas context
             var ctx = document.getElementById("metrics").getContext('2d');
@@ -118,8 +118,6 @@
                  , author      = document.createElement('h2')
                  , ts          = document.createElement('h3')
                ;
-
-               console.log(messageData);
 
                var i = messageData.keywords.length;
                while(i--){

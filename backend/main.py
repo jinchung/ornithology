@@ -64,6 +64,7 @@ if __name__ == "__main__":
 
     SERVER_FACTORY = server.ServerFactory(SERVER_URL, MONITOR_FACTORY,
                                           CONFIG, ARGS.dev)
+    print "in main: server_factory created... "
     signal.signal(signal.SIGINT, clean_exit)
     SERVER_FACTORY.protocol = server.ServerProtocol
     SERVER_FACTORY.setup()

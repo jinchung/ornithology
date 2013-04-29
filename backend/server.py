@@ -28,9 +28,11 @@ class ServerProtocol(WebSocketServerProtocol):
     """
 
     def init(self):
+        print "in server protocol: got connection"
         super(ServerProtocol, self).__init__()
 
     def onMessage(self, msg, binary):
+        print "in server protocol: got msg"
         self.factory.register(self, msg)
 
     def connectionLost(self, reason):
@@ -50,6 +52,7 @@ class ServerFactory(WebSocketServerFactory):
         self.msg_queue = Queue.Queue(maxsize=200)
         self.producers = []
         self.monitor = monitor
+        print "in server: properly exiting server factory constructor... "
 
     def register(self, client, msg):
         """
@@ -89,6 +92,7 @@ class ServerFactory(WebSocketServerFactory):
             self.producers.append(nytproducer.NYTProducer(
                             self.config['NYT']['api_key'],
                             self.msg_queue))
+            print "in server factory: producers generated... "
 
     def consumers(self):
         """
