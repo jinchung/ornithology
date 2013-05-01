@@ -91,6 +91,7 @@ optional arguments:
 
 ###Client-side
 * Frontend visualization
+* Web monitor client side - client should somehow be notified that the submission worked, even though matches may not be available yet
 
 ###Long-Term TBD
 * More architecture thought needed for having monitors as downstream consumers
